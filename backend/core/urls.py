@@ -1,10 +1,17 @@
+from django.urls import path, include
+from django.conf import settings
 from django.contrib import admin
-from django.urls import path
-from django.http import JsonResponse
-
-def health_check(request):
-    return JsonResponse({"status": "ok"})
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
-    path('api/health/', health_check),
+    path('admin/', admin.site.urls),
+    path('api/auth/',     include('apps.usuarios.urls')),
+    path('api/usuarios/', include('apps.usuarios.urls')),
+    path('api/empresas/', include('apps.empresas.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path('api/schema/', SpectacularAPIView.as_view(),                      name='schema'),
+        path('api/docs/',   SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    ]
