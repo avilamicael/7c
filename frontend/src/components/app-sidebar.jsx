@@ -33,8 +33,8 @@ import {
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "Micael",
+    email: "micael@gmail.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
@@ -43,23 +43,23 @@ const data = {
       url: "#",
       icon: IconDashboard,
     },
+    // {
+    //   title: "Lifecycle",
+    //   url: "#",
+    //   icon: IconListDetails,
+    // },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
+      title: "Graficos",
       url: "#",
       icon: IconChartBar,
     },
     {
-      title: "Projects",
+      title: "Kanban",
       url: "#",
       icon: IconFolder,
     },
     {
-      title: "Team",
+      title: "Clientes",
       url: "#",
       icon: IconUsers,
     },
@@ -114,34 +114,34 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
+      title: "Configurações",
       url: "#",
       icon: IconSettings,
     },
     {
-      title: "Get Help",
+      title: "Ajuda",
       url: "#",
       icon: IconHelp,
     },
     {
-      title: "Search",
+      title: "Procurar",
       url: "#",
       icon: IconSearch,
     },
   ],
   documents: [
     {
-      name: "Data Library",
+      name: "Proposta Comercial",
       url: "#",
       icon: IconDatabase,
     },
     {
-      name: "Reports",
+      name: "Relatórios de Vendas",
       url: "#",
       icon: IconReport,
     },
     {
-      name: "Word Assistant",
+      name: "Proposta Comercial",
       url: "#",
       icon: IconFileWord,
     },
@@ -159,7 +159,7 @@ export function AppSidebar({
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">7C Turismo</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

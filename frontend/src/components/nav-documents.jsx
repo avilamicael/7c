@@ -49,16 +49,16 @@ export function NavDocuments({
                 align={isMobile ? "end" : "start"}>
                 <DropdownMenuItem>
                   <IconFolder />
-                  <span>Open</span>
+                  <span>Abrir</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <IconShare3 />
-                  <span>Share</span>
+                  <span>Compartilhar</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive">
                   <IconTrash />
-                  <span>Delete</span>
+                  <span>Deletar</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -67,7 +67,7 @@ export function NavDocuments({
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
             <IconDots className="text-sidebar-foreground/70" />
-            <span>More</span>
+            <span>Mais</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
