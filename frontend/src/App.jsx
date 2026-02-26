@@ -1,52 +1,29 @@
-import { useState, useEffect } from 'react'
-import Login from './pages/Login.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import { logout } from './api/client'
-
-// Reset CSS mínimo
-const globalStyle = `
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0a0a0f; }
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-`
+import { AppSidebar } from '@/components/app-sidebar'
+import { SiteHeader } from '@/components/site-header'
+import { SectionCards } from '@/components/section-cards'
+import { DataTable } from '@/components/data-table'
+import { ChartAreaInteractive } from '@/components/chart-area-interactive'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import data from '@/app/dashboard/data.json'
 
 export default function App() {
-  const [usuario, setUsuario] = useState(null)
-  const [iniciando, setIniciando] = useState(true)
-
-  // Restaura sessão se já havia access token salvo
-  useEffect(() => {
-    const salvo = sessionStorage.getItem('usuario')
-    const access = sessionStorage.getItem('access')
-    if (salvo && access) {
-      try {
-        setUsuario(JSON.parse(salvo))
-      } catch {
-        // sessão corrompida
-      }
-    }
-    setIniciando(false)
-  }, [])
-
-  function handleLogin(dadosUsuario) {
-    setUsuario(dadosUsuario)
-  }
-
-  function handleLogout() {
-    logout() // invalida refresh na blacklist + limpa sessionStorage
-    setUsuario(null)
-  }
-
-  if (iniciando) return null
-
   return (
-    <>
-      <style>{globalStyle}</style>
-      {usuario ? (
-        <Dashboard usuario={usuario} onLogout={handleLogout} />
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
-    </>
+    <SidebarProvider>
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <SectionCards />
+              <div className="px-4 lg:px-6">
+                <ChartAreaInteractive />
+              </div>
+              <DataTable data={data} />
+            </div>
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
