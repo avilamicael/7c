@@ -55,7 +55,7 @@ const data = {
   documents: [
     { name: "Dashboard", url: "#", icon: IconDashboard },
     { name: "Kanban", url: "#", icon: IconLayoutKanban },
-    { name: "Clientes", url: "#", icon: IconUsers },
+    { name: "Clientes", url: "/clientes", icon: IconUsers },
     { name: "Financeiro", url: "#", icon: IconCash },
     { name: "Tarefas", url: "#", icon: IconChecklist },
   ],
