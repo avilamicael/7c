@@ -122,3 +122,8 @@
     @apply bg-background text-foreground;
     }
 }
+
+#nprogress .bar {
+  background: #1E3A5F; /* sua cor primária */
+  height: 3px;
+}

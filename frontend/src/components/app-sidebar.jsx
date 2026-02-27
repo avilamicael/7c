@@ -1,22 +1,19 @@
 import * as React from "react"
+import { Link } from "react-router-dom"
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
   IconSearch,
   IconSettings,
   IconUsers,
+  IconLayoutKanban,
+  IconCash,
+  IconChecklist,
+  IconPlane,
+
 } from "@tabler/icons-react"
 
+import { Separator } from "@/components/ui/separator"
 import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -31,138 +28,60 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
+const DEFAULT_LOGO = "/logoAuth.png"
+
 const data = {
   user: {
     name: "Micael",
     email: "micael@gmail.com",
     avatar: "/avatars/shadcn.jpg",
   },
+  // Logo da empresa vinda do backend — null usa o padrão
+  // TODO: substituir por contexto/store quando conectar a API
+  // GET /api/empresas/minha/personalizacao/ → { logo: "https://..." }
+  empresa: {
+    nome: "7C Turismo & Consultoria",
+    logo: null,
+  },
   navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
-    },
-    // {
-    //   title: "Lifecycle",
-    //   url: "#",
-    //   icon: IconListDetails,
-    // },
-    {
-      title: "Graficos",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Kanban",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Clientes",
-      url: "#",
-      icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
+    { title: "Aéreo", url: "/", icon: IconPlane },
+    { title: "Cotação", url: "/", icon: IconDashboard },
   ],
   navSecondary: [
-    {
-      title: "Configurações",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Ajuda",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Procurar",
-      url: "#",
-      icon: IconSearch,
-    },
+    { title: "Configurações", url: "/configuracoes", icon: IconSettings },
+    { title: "Ajuda", url: "#", icon: IconHelp },
+    { title: "Procurar", url: "#", icon: IconSearch },
   ],
   documents: [
-    {
-      name: "Proposta Comercial",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Relatórios de Vendas",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Proposta Comercial",
-      url: "#",
-      icon: IconFileWord,
-    },
+    { name: "Dashboard", url: "#", icon: IconDashboard },
+    { name: "Kanban", url: "#", icon: IconLayoutKanban },
+    { name: "Clientes", url: "#", icon: IconUsers },
+    { name: "Financeiro", url: "#", icon: IconCash },
+    { name: "Tarefas", url: "#", icon: IconChecklist },
   ],
 }
 
-export function AppSidebar({
-  ...props
-}) {
+export function AppSidebar({ ...props }) {
+  const logoSrc = data.empresa.logo || DEFAULT_LOGO
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">7C Turismo</span>
-              </a>
+              <Link to="/">
+                <img
+                  src={logoSrc}
+                  alt={`Logo ${data.empresa.nome}`}
+                  className="!size-5 object-contain"
+                  onError={(e) => { e.currentTarget.src = DEFAULT_LOGO }}
+                />
+                <span className="text-base font-semibold">{data.empresa.nome}</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <Separator />
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
@@ -174,5 +93,5 @@ export function AppSidebar({
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useTheme } from "@/hooks/use-theme"
 
-export function SiteHeader() {
+export function SiteHeader({ title = "Dashboard" }) {
   const { theme, setTheme } = useTheme()
 
   const toggleTheme = () => {
@@ -16,7 +16,7 @@ export function SiteHeader() {
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
-        <h1 className="text-base font-medium">Dashboard</h1>
+        <h1 className="text-base font-medium">{title}</h1>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={toggleTheme} className="relative">
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
