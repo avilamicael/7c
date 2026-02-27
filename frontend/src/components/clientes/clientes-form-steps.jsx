@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -24,7 +25,7 @@ export function Step1({ form, onChange }) {
       </div>
       <div className="space-y-1.5">
         <Label>Data de Nascimento</Label>
-        <Input type="date" value={form.data_nascimento} onChange={(e) => onChange("data_nascimento", e.target.value)} />
+        <DatePicker value={form.data_nascimento} onChange={(val) => onChange("data_nascimento", val)} placeholder="Data de nascimento" />
       </div>
       <div className="space-y-1.5">
         <Label>Nacionalidade (ISO)</Label>
@@ -74,11 +75,11 @@ export function Step2({ form, onChange }) {
           </div>
           <div className="space-y-1.5">
             <Label>Data de Emissão</Label>
-            <Input type="date" value={form.passaporte_emissao} onChange={(e) => onChange("passaporte_emissao", e.target.value)} />
+            <DatePicker value={form.passaporte_emissao} onChange={(val) => onChange("passaporte_emissao", val)} placeholder="Data de emissão" />
           </div>
           <div className="space-y-1.5">
             <Label>Data de Expiração</Label>
-            <Input type="date" value={form.passaporte_expiracao} onChange={(e) => onChange("passaporte_expiracao", e.target.value)} />
+            <DatePicker value={form.passaporte_expiracao} onChange={(val) => onChange("passaporte_expiracao", val)} placeholder="Data de expiração" />
           </div>
         </div>
       </div>

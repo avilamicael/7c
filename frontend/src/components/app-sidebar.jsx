@@ -10,11 +10,10 @@ import {
   IconCash,
   IconChecklist,
   IconPlane,
-
 } from "@tabler/icons-react"
 
 import { Separator } from "@/components/ui/separator"
-import { NavDocuments } from "@/components/nav-documents"
+// import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -47,18 +46,25 @@ const data = {
     { title: "Aéreo", url: "/", icon: IconPlane },
     { title: "Cotação", url: "/", icon: IconDashboard },
   ],
+  navCrm: [
+    { title: "Dashboard", url: "#", icon: IconDashboard },
+    { title: "Kanban", url: "#", icon: IconLayoutKanban },
+    { title: "Clientes", url: "/clientes", icon: IconUsers },
+    { title: "Financeiro", url: "#", icon: IconCash },
+    { title: "Tarefas", url: "#", icon: IconChecklist },
+  ],
   navSecondary: [
     { title: "Configurações", url: "/configuracoes", icon: IconSettings },
     { title: "Ajuda", url: "#", icon: IconHelp },
     { title: "Procurar", url: "#", icon: IconSearch },
   ],
-  documents: [
-    { name: "Dashboard", url: "#", icon: IconDashboard },
-    { name: "Kanban", url: "#", icon: IconLayoutKanban },
-    { name: "Clientes", url: "/clientes", icon: IconUsers },
-    { name: "Financeiro", url: "#", icon: IconCash },
-    { name: "Tarefas", url: "#", icon: IconChecklist },
-  ],
+  // documents: [
+  //   { name: "Dashboard", url: "#", icon: IconDashboard },
+  //   { name: "Kanban", url: "#", icon: IconLayoutKanban },
+  //   { name: "Clientes", url: "/clientes", icon: IconUsers },
+  //   { name: "Financeiro", url: "#", icon: IconCash },
+  //   { name: "Tarefas", url: "#", icon: IconChecklist },
+  // ],
 }
 
 export function AppSidebar({ ...props }) {
@@ -81,12 +87,12 @@ export function AppSidebar({ ...props }) {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <Separator />
         </SidebarMenu>
+        <Separator />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavMain items={data.navMain} crmItems={data.navCrm} />
+        {/* <NavDocuments items={data.documents} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
