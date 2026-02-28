@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Empresa, UsuarioEmpresa, CreditoExtra, PersonalizacaoEmpresa
+from apps.core.mixins  import NormalizarTextoMixin
 
 
 class MinhaEmpresaSerializer(serializers.ModelSerializer):
-    """Dados básicos visíveis para qualquer membro."""
     class Meta:
         model = Empresa
         fields = ['razao_social', 'cnpj']
@@ -14,16 +14,19 @@ class PersonalizacaoSerializer(serializers.ModelSerializer):
         model = PersonalizacaoEmpresa
         fields = ['cor_primaria', 'cor_secundaria', 'logo', 'data_atualizacao']
         read_only_fields = ['data_atualizacao']
-        
 
-class EmpresaEditarSerializer(serializers.ModelSerializer):
-    """Apenas admin da empresa pode editar esses campos."""
+
+class EmpresaEditarSerializer(NormalizarTextoMixin, serializers.ModelSerializer):
+    campos_lower = ['nome_fantasia']
+
     class Meta:
         model = Empresa
         fields = ['nome_fantasia', 'telefone']
 
 
-class CreditoExtraSerializer(serializers.ModelSerializer):
+class CreditoExtraSerializer(NormalizarTextoMixin, serializers.ModelSerializer):
+    campos_lower = ['descricao']
+
     class Meta:
         model = CreditoExtra
         fields = ['id', 'quantidade', 'descricao', 'data_compra']

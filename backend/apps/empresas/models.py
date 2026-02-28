@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.utils.text import slugify
 
 
 class Empresa(models.Model):
@@ -15,7 +16,8 @@ class Empresa(models.Model):
     public_id        = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     cnpj             = models.CharField(max_length=14, unique=True)
     razao_social     = models.CharField(max_length=255)
-    nome_fantasia    = models.CharField(max_length=255, blank=True)
+    nome_fantasia    = models.CharField(max_length=255)
+    slug             = models.SlugField(max_length=255, unique=True, blank=True, db_index=True)
     status           = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDENTE)
     email            = models.EmailField(blank=True)
     telefone         = models.CharField(max_length=11, blank=True)
@@ -33,6 +35,19 @@ class Empresa(models.Model):
     def __str__(self):
         return self.razao_social
 
+    def _gerar_slug(self):
+        base = slugify(self.nome_fantasia or self.razao_social)
+        slug = base
+        qs = Empresa.objects.exclude(pk=self.pk)
+        if qs.filter(slug=slug).exists():
+            slug = f"{base}-{str(self.public_id)[:8]}"
+        return slug
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self._gerar_slug()
+        super().save(*args, **kwargs)
+
     @property
     def cota_disponivel(self):
         return max(0, (self.cota_mensal - self.consumo_mes) + self.creditos_extras)
@@ -41,12 +56,14 @@ class Empresa(models.Model):
     def tem_cota(self):
         return self.cota_disponivel > 0
 
+
 class PersonalizacaoEmpresa(models.Model):
-    empresa        = models.OneToOneField(Empresa, on_delete=models.CASCADE, related_name='personalizacao')
-    cor_primaria   = models.CharField(max_length=7, default='#000000')   # hex
-    cor_secundaria = models.CharField(max_length=7, default='#ffffff')   # hex
-    logo           = models.URLField(blank=True)   # URL do arquivo (futuro: Cloudflare R2)
+    empresa          = models.OneToOneField(Empresa, on_delete=models.CASCADE, related_name='personalizacao')
+    cor_primaria     = models.CharField(max_length=7, default='#000000')
+    cor_secundaria   = models.CharField(max_length=7, default='#ffffff')
+    logo             = models.URLField(blank=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
+
 
 class CreditoExtra(models.Model):
     empresa     = models.ForeignKey(Empresa, on_delete=models.PROTECT, related_name='historico_creditos')
