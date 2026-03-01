@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.utils.text import slugify
+from apps.core.validators import validar_cnpj, validar_cor_hex, validar_telefone
 
 
 class Empresa(models.Model):
@@ -14,13 +15,13 @@ class Empresa(models.Model):
 
     id               = models.BigAutoField(primary_key=True)
     public_id        = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
-    cnpj             = models.CharField(max_length=14, unique=True)
+    cnpj             = models.CharField(max_length=14, unique=True, validators=[validar_cnpj])
     razao_social     = models.CharField(max_length=255)
     nome_fantasia    = models.CharField(max_length=255)
     slug             = models.SlugField(max_length=255, unique=True, blank=True, db_index=True)
     status           = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDENTE)
     email            = models.EmailField(blank=True)
-    telefone         = models.CharField(max_length=11, blank=True)
+    telefone        = models.CharField(max_length=11, blank=True, null=True, validators=[validar_telefone])
     cota_mensal      = models.PositiveIntegerField(default=0)
     creditos_extras  = models.PositiveIntegerField(default=0)
     consumo_mes      = models.PositiveIntegerField(default=0)
@@ -58,11 +59,11 @@ class Empresa(models.Model):
 
 
 class PersonalizacaoEmpresa(models.Model):
-    empresa          = models.OneToOneField(Empresa, on_delete=models.CASCADE, related_name='personalizacao')
-    cor_primaria     = models.CharField(max_length=7, default='#000000')
-    cor_secundaria   = models.CharField(max_length=7, default='#ffffff')
-    logo             = models.URLField(blank=True)
-    data_atualizacao = models.DateTimeField(auto_now=True)
+    empresa             = models.OneToOneField(Empresa, on_delete=models.CASCADE, related_name='personalizacao')
+    cor_primaria        = models.CharField(max_length=7, default="#000000", validators=[validar_cor_hex])
+    cor_secundaria      = models.CharField(max_length=7, default="#ffffff", validators=[validar_cor_hex])    
+    logo                = models.URLField(blank=True)
+    data_atualizacao    = models.DateTimeField(auto_now=True)
 
 
 class CreditoExtra(models.Model):
@@ -81,13 +82,12 @@ class UsuarioEmpresa(models.Model):
         ADMIN    = 'admin',    'Administrador'
         OPERADOR = 'operador', 'Operador'
 
-    usuario      = models.ForeignKey('usuarios.Usuario', on_delete=models.CASCADE, related_name='empresas')
+    usuario      = models.OneToOneField('usuarios.Usuario', on_delete=models.CASCADE, related_name='empresa_vinculo')
     empresa      = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name='usuarios')
     role         = models.CharField(max_length=20, choices=Role.choices, default=Role.OPERADOR)
     ativo        = models.BooleanField(default=True)
     data_vinculo = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('usuario', 'empresa')
         verbose_name = 'Usuário da Empresa'
         verbose_name_plural = 'Usuários da Empresa'

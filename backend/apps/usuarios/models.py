@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from apps.core.validators import validar_telefone
 
 
 class UsuarioManager(BaseUserManager):
@@ -24,7 +25,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     public_id        = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     email            = models.EmailField(unique=True)
     nome             = models.CharField(max_length=255)
-    telefone         = models.CharField(max_length=11, blank=True)
+    telefone         = models.CharField(max_length=11, blank=True, null=True, validators=[validar_telefone])
     is_active        = models.BooleanField(default=True)
     is_staff         = models.BooleanField(default=False)
     date_joined      = models.DateTimeField(auto_now_add=True)

@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from apps.core.permissions import IsSuperAdmin, IsAdminEmpresa, IsMembroEmpresa
-from apps.usuarios.views import get_empresa_do_admin
+from apps.core.utils import get_empresa_do_admin
 from .models import Empresa, UsuarioEmpresa, CreditoExtra
 from .serializers import (
     MinhaEmpresaSerializer, EmpresaEditarSerializer,

@@ -13,9 +13,9 @@ export function useTheme() {
         root.classList.remove("light", "dark")
 
         if (theme === "system") {
-            root.classList.add(systemDark ? "dark" : "light")
-        } else {
-            root.classList.add(theme)
+            if (systemDark) root.classList.add("dark")
+        } else if (theme === "dark") {
+            root.classList.add("dark")
         }
 
         localStorage.setItem("theme", theme)

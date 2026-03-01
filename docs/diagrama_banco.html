@@ -16,6 +16,8 @@
     --accent2: #f7c06a;
     --accent3: #6af7c0;
     --accent4: #f76a9a;
+    --accent5: #6aaaf7;
+    --accent6: #f7a06a;
     --text: #e8e8f0;
     --muted: #5a5a7a;
     --pk: #f7c06a;
@@ -28,10 +30,9 @@
     font-family: 'JetBrains Mono', monospace;
     color: var(--text);
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
-  /* Background grid */
   body::before {
     content: '';
     position: fixed;
@@ -47,61 +48,112 @@
   header {
     position: relative;
     z-index: 10;
-    padding: 40px 60px 20px;
+    padding: 16px 40px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(8px);
+    flex-shrink: 0;
   }
 
   header h1 {
     font-family: 'Syne', sans-serif;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text);
   }
 
-  header span {
-    font-size: 0.75rem;
+  .badge {
+    font-size: 0.72rem;
     color: var(--muted);
     background: var(--surface);
     border: 1px solid var(--border);
-    padding: 4px 10px;
+    padding: 3px 9px;
     border-radius: 4px;
+  }
+
+  .zoom-controls {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .zoom-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .zoom-btn:hover { border-color: var(--accent); background: rgba(124,106,247,0.1); }
+
+  .zoom-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    min-width: 46px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 6px;
   }
 
   .legend {
     position: relative;
     z-index: 10;
-    padding: 14px 60px;
+    padding: 10px 40px;
     border-bottom: 1px solid var(--border);
     display: flex;
-    gap: 24px;
-    font-size: 0.72rem;
+    gap: 20px;
+    font-size: 0.7rem;
     color: var(--muted);
+    flex-wrap: wrap;
+    background: rgba(10,10,15,0.9);
+    flex-shrink: 0;
   }
 
   .legend-item { display: flex; align-items: center; gap: 6px; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
 
-  /* Canvas area */
-  .canvas {
+  .viewport {
     position: relative;
-    z-index: 1;
-    padding: 60px;
-    min-height: calc(100vh - 100px);
+    flex: 1;
+    overflow: hidden;
+    cursor: grab;
+  }
+
+  .viewport:active { cursor: grabbing; }
+
+  .canvas {
+    position: absolute;
+    top: 0; left: 0;
+    transform-origin: 0 0;
+    transition: none;
   }
 
   svg.connections {
     position: absolute;
     top: 0; left: 0;
-    width: 100%; height: 100%;
     pointer-events: none;
     z-index: 2;
+    overflow: visible;
   }
 
-  /* Tables */
   .table {
     position: absolute;
     background: var(--surface);
@@ -109,7 +161,7 @@
     border-radius: 10px;
     min-width: 240px;
     z-index: 5;
-    animation: fadeIn 0.5s ease forwards;
+    animation: fadeIn 0.4s ease forwards;
     opacity: 0;
     cursor: move;
     user-select: none;
@@ -128,16 +180,16 @@
   }
 
   @keyframes fadeIn {
-    to { opacity: 1; transform: translateY(0); }
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .table-header {
-    padding: 12px 16px;
+    padding: 11px 14px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     border-radius: 9px 9px 0 0;
   }
 
@@ -150,35 +202,36 @@
   .table-name {
     font-family: 'Syne', sans-serif;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.83rem;
     letter-spacing: 0.02em;
   }
 
   .table-app {
     margin-left: auto;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     color: var(--muted);
     background: rgba(255,255,255,0.04);
-    padding: 2px 7px;
+    padding: 2px 6px;
     border-radius: 3px;
+    white-space: nowrap;
   }
 
-  .table-fields { padding: 8px 0; }
+  .table-fields { padding: 6px 0; }
 
   .field {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 5px 16px;
-    font-size: 0.72rem;
+    gap: 7px;
+    padding: 4px 14px;
+    font-size: 0.7rem;
     transition: background 0.15s;
   }
 
   .field:hover { background: rgba(255,255,255,0.03); }
 
   .field-badge {
-    font-size: 0.6rem;
-    padding: 1px 5px;
+    font-size: 0.58rem;
+    padding: 1px 4px;
     border-radius: 3px;
     font-weight: 600;
     min-width: 22px;
@@ -189,290 +242,228 @@
   .badge-pk { background: rgba(247,192,106,0.15); color: var(--pk); }
   .badge-fk { background: rgba(106,247,192,0.15); color: var(--fk); }
   .badge-ui { background: rgba(124,106,247,0.15); color: var(--accent); }
+  .badge-empty { min-width: 22px; }
 
   .field-name { color: var(--field); flex: 1; }
-  .field-type { color: var(--muted); font-size: 0.65rem; }
-  .field-req { font-size: 0.65rem; font-weight: 700; min-width: 12px; text-align: center; flex-shrink: 0; }
+  .field-type { color: var(--muted); font-size: 0.63rem; white-space: nowrap; }
+
+  .field-req { font-size: 0.6rem; font-weight: 700; min-width: 12px; text-align: center; flex-shrink: 0; }
   .req { color: #f76a6a; }
-  .opt { color: #3a3a5a; }
+  .opt { color: var(--muted); }
 
-  .field-req {
-    font-size: 0.6rem;
-    font-weight: 700;
-    min-width: 14px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-  .req  { color: #f76a6a; }
-  .opt  { color: var(--muted); }
+  .field-divider { height: 1px; background: var(--border); margin: 3px 14px; opacity: 0.5; }
 
-  .field-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 16px;
-    opacity: 0.5;
-  }
+  .conn-line { fill: none; stroke-width: 1.5; opacity: 0.5; }
 
-  /* Connection lines */
-  .conn-line {
-    fill: none;
-    stroke-width: 1.5;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-  }
-  .conn-line:hover { opacity: 1; }
+  /* Themes */
+  .t-empresa .table-icon        { background: var(--accent); }
+  .t-empresa .table-name        { color: var(--accent); }
+  .t-empresa .table-header      { background: rgba(124,106,247,0.08); }
 
-  /* Color accents per table */
-  .t-empresa .table-icon, .t-empresa .table-header { background: rgba(124,106,247,0.08); }
-  .t-empresa .table-icon { background: var(--accent); }
-  .t-empresa .table-name { color: var(--accent); }
-
-  .t-personalizacao .table-icon { background: var(--accent4); }
-  .t-personalizacao .table-name { color: var(--accent4); }
+  .t-personalizacao .table-icon   { background: var(--accent4); }
+  .t-personalizacao .table-name   { color: var(--accent4); }
   .t-personalizacao .table-header { background: rgba(247,106,154,0.06); }
 
-  .t-creditoextra .table-icon { background: var(--accent2); }
-  .t-creditoextra .table-name { color: var(--accent2); }
+  .t-creditoextra .table-icon   { background: var(--accent2); }
+  .t-creditoextra .table-name   { color: var(--accent2); }
   .t-creditoextra .table-header { background: rgba(247,192,106,0.06); }
 
-  .t-usuario .table-icon { background: var(--accent3); }
-  .t-usuario .table-name { color: var(--accent3); }
+  .t-usuario .table-icon   { background: var(--accent3); }
+  .t-usuario .table-name   { color: var(--accent3); }
   .t-usuario .table-header { background: rgba(106,247,192,0.08); }
 
-  .t-usuarioempresa .table-icon { background: #a78bfa; }
-  .t-usuarioempresa .table-name { color: #a78bfa; }
+  .t-usuarioempresa .table-icon   { background: #a78bfa; }
+  .t-usuarioempresa .table-name   { color: #a78bfa; }
   .t-usuarioempresa .table-header { background: rgba(167,139,250,0.07); }
 
-  /* Tooltip */
-  .tooltip {
+  .t-cliente .table-icon   { background: var(--accent5); }
+  .t-cliente .table-name   { color: var(--accent5); }
+  .t-cliente .table-header { background: rgba(106,170,247,0.08); }
+
+  .t-clientedocumento .table-icon   { background: var(--accent6); }
+  .t-clientedocumento .table-name   { color: var(--accent6); }
+  .t-clientedocumento .table-header { background: rgba(247,160,106,0.07); }
+
+  .t-clientetelefone .table-icon   { background: #c4b5fd; }
+  .t-clientetelefone .table-name   { color: #c4b5fd; }
+  .t-clientetelefone .table-header { background: rgba(196,181,253,0.06); }
+
+  #loading {
     position: fixed;
-    background: #1a1a2e;
-    border: 1px solid var(--border);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.7rem;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    font-size: 0.8rem;
     color: var(--muted);
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.15s;
+    gap: 10px;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .page-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Diagrama do Banco de Dados</h1>
-  <span>5 tabelas</span>
-  <span>Django ORM</span>
-  <span>PostgreSQL</span>
-</header>
+<div id="loading"><div class="spinner"></div> Carregando schema…</div>
 
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--pk)"></div> PK — Chave Primária</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--fk)"></div> FK — Chave Estrangeira</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> UI — Único + Index</div>
-  <div class="legend-item"><span style="color:#f76a6a;font-weight:700;font-size:0.8rem">*</span> &nbsp;Obrigatório</div>
-  <div class="legend-item"><span style="color:var(--muted);font-size:0.8rem">○</span> &nbsp;Opcional</div>
-  <div class="legend-item"><span style="color:#f76a6a;font-weight:700">*</span>&nbsp;Obrigatório</div>
-  <div class="legend-item"><span style="color:#3a3a5a">○</span>&nbsp;Opcional</div>
-  <div class="legend-item" style="margin-left:auto; color: var(--muted); font-size:0.7rem;">Arraste as tabelas para reorganizar</div>
+<div class="page-wrap">
+  <header>
+    <h1>Diagrama do Banco de Dados</h1>
+    <span class="badge" id="badge-tables">— tabelas</span>
+    <span class="badge">Django ORM</span>
+    <span class="badge">PostgreSQL</span>
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="btn-fit" title="Ajustar à tela">⊡</button>
+      <button class="zoom-btn" id="btn-minus" title="Diminuir (-)">−</button>
+      <span class="zoom-label" id="zoom-label">100%</span>
+      <button class="zoom-btn" id="btn-plus" title="Aumentar (+)">+</button>
+    </div>
+  </header>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--pk)"></div> PK — Chave Primária</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--fk)"></div> FK — Chave Estrangeira</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> UI — Único + Index</div>
+    <div class="legend-item"><span style="color:#f76a6a;font-weight:700">*</span>&nbsp;Obrigatório</div>
+    <div class="legend-item"><span style="color:#3a3a5a">○</span>&nbsp;Opcional</div>
+    <div class="legend-item" style="margin-left:auto;font-size:0.68rem">Scroll para zoom · Arraste canvas para mover · Arraste tabela para reposicionar</div>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="canvas" id="canvas">
+      <svg class="connections" id="svg"></svg>
+    </div>
+  </div>
 </div>
-
-<div class="canvas" id="canvas">
-  <svg class="connections" id="svg"></svg>
-
-  <!-- EMPRESA -->
-  <div class="table t-empresa" id="t-empresa" style="left:340px; top:60px; animation-delay:0.1s">
-    <div class="table-header">
-      <div class="table-icon"></div>
-      <span class="table-name">Empresa</span>
-      <span class="table-app">empresas</span>
-    </div>
-    <div class="table-fields">
-      <div class="field"><span class="field-badge badge-pk">PK</span><span class="field-req req">*</span><span class="field-name">id</span><span class="field-type">BigInt</span></div>
-      <div class="field"><span class="field-badge badge-ui">UI</span><span class="field-req req">*</span><span class="field-name">public_id</span><span class="field-type">UUID</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge badge-ui">UI</span><span class="field-req req">*</span><span class="field-name">cnpj</span><span class="field-type">Char(14)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">razao_social</span><span class="field-type">Char(255)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">nome_fantasia</span><span class="field-type">Char(255)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">status</span><span class="field-type">Choice</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">email</span><span class="field-type">Email</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">telefone</span><span class="field-type">Char(20)</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">cota_mensal</span><span class="field-type">Int</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">creditos_extras</span><span class="field-type">Int</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">consumo_mes</span><span class="field-type">Int</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">mes_referencia</span><span class="field-type">Date</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">data_cadastro</span><span class="field-type">DateTime</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">data_atualizacao</span><span class="field-type">DateTime</span></div>
-    </div>
-  </div>
-
-  <!-- PERSONALIZACAO -->
-  <div class="table t-personalizacao" id="t-personalizacao" style="left:700px; top:60px; animation-delay:0.2s">
-    <div class="table-header">
-      <div class="table-icon"></div>
-      <span class="table-name">PersonalizacaoEmpresa</span>
-      <span class="table-app">empresas</span>
-    </div>
-    <div class="table-fields">
-      <div class="field"><span class="field-badge badge-pk">PK</span><span class="field-req req">*</span><span class="field-name">id</span><span class="field-type">BigInt</span></div>
-      <div class="field"><span class="field-badge badge-fk">FK</span><span class="field-req req">*</span><span class="field-name">empresa_id</span><span class="field-type">→ Empresa</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">cor_primaria</span><span class="field-type">Char(7)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">cor_secundaria</span><span class="field-type">Char(7)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">logo</span><span class="field-type">URL</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">data_atualizacao</span><span class="field-type">DateTime</span></div>
-    </div>
-  </div>
-
-  <!-- CREDITO EXTRA -->
-  <div class="table t-creditoextra" id="t-creditoextra" style="left:700px; top:340px; animation-delay:0.3s">
-    <div class="table-header">
-      <div class="table-icon"></div>
-      <span class="table-name">CreditoExtra</span>
-      <span class="table-app">empresas</span>
-    </div>
-    <div class="table-fields">
-      <div class="field"><span class="field-badge badge-pk">PK</span><span class="field-req req">*</span><span class="field-name">id</span><span class="field-type">BigInt</span></div>
-      <div class="field"><span class="field-badge badge-fk">FK</span><span class="field-req req">*</span><span class="field-name">empresa_id</span><span class="field-type">→ Empresa</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">quantidade</span><span class="field-type">Int</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">descricao</span><span class="field-type">Char(255)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">data_compra</span><span class="field-type">DateTime</span></div>
-    </div>
-  </div>
-
-  <!-- USUARIO -->
-  <div class="table t-usuario" id="t-usuario" style="left:60px; top:60px; animation-delay:0.15s">
-    <div class="table-header">
-      <div class="table-icon"></div>
-      <span class="table-name">Usuario</span>
-      <span class="table-app">usuarios</span>
-    </div>
-    <div class="table-fields">
-      <div class="field"><span class="field-badge badge-pk">PK</span><span class="field-req req">*</span><span class="field-name">id</span><span class="field-type">BigInt</span></div>
-      <div class="field"><span class="field-badge badge-ui">UI</span><span class="field-req req">*</span><span class="field-name">public_id</span><span class="field-type">UUID</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge badge-ui">UI</span><span class="field-req req">*</span><span class="field-name">email</span><span class="field-type">Email</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">nome</span><span class="field-type">Char(255)</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req opt">○</span><span class="field-name">telefone</span><span class="field-type">Char(20)</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">is_active</span><span class="field-type">Bool</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">is_staff</span><span class="field-type">Bool</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">is_superuser</span><span class="field-type">Bool</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">date_joined</span><span class="field-type">DateTime</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">data_atualizacao</span><span class="field-type">DateTime</span></div>
-    </div>
-  </div>
-
-  <!-- USUARIO EMPRESA -->
-  <div class="table t-usuarioempresa" id="t-usuarioempresa" style="left:340px; top:520px; animation-delay:0.25s">
-    <div class="table-header">
-      <div class="table-icon"></div>
-      <span class="table-name">UsuarioEmpresa</span>
-      <span class="table-app">empresas</span>
-    </div>
-    <div class="table-fields">
-      <div class="field"><span class="field-badge badge-pk">PK</span><span class="field-req req">*</span><span class="field-name">id</span><span class="field-type">BigInt</span></div>
-      <div class="field"><span class="field-badge badge-fk">FK</span><span class="field-req req">*</span><span class="field-name">usuario_id</span><span class="field-type">→ Usuario</span></div>
-      <div class="field"><span class="field-badge badge-fk">FK</span><span class="field-req req">*</span><span class="field-name">empresa_id</span><span class="field-type">→ Empresa</span></div>
-      <div class="field-divider"></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">role</span><span class="field-type">Choice</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">ativo</span><span class="field-type">Bool</span></div>
-      <div class="field"><span class="field-badge" style="min-width:22px"></span><span class="field-req req">*</span><span class="field-name">data_vinculo</span><span class="field-type">DateTime</span></div>
-    </div>
-  </div></div>
-
-</div>
-
-<div class="tooltip" id="tooltip"></div>
 
 <script>
-// Drag logic
-const canvas = document.getElementById('canvas');
-let dragging = null, ox = 0, oy = 0;
+const ZOOM_MIN = 0.2;
+const ZOOM_MAX = 2.0;
+const ZOOM_STEP = 0.1;
 
-document.querySelectorAll('.table').forEach(el => {
-  el.addEventListener('mousedown', e => {
-    dragging = el;
-    const r = el.getBoundingClientRect();
-    const cr = canvas.getBoundingClientRect();
-    ox = e.clientX - (r.left - cr.left);
-    oy = e.clientY - (r.top - cr.top);
-    el.classList.add('dragging');
-    e.preventDefault();
+let schema = null;
+let zoom = 1;
+let panX = 0, panY = 0;
+
+// Pan state
+let isPanning = false;
+let panStartX = 0, panStartY = 0;
+let panOriginX = 0, panOriginY = 0;
+
+// Drag table state
+let draggingTable = null;
+let dragOffX = 0, dragOffY = 0;
+
+const canvas  = document.getElementById('canvas');
+const viewport = document.getElementById('viewport');
+const svgEl   = document.getElementById('svg');
+
+// ── Render tables ─────────────────────────────────────────────
+function renderTables(tables) {
+  tables.forEach(t => {
+    const el = document.createElement('div');
+    el.className = `table ${t.theme}`;
+    el.id = t.id;
+    el.style.left  = t.x + 'px';
+    el.style.top   = t.y + 'px';
+    el.style.animationDelay = t.delay + 's';
+
+    let fieldsHTML = '';
+    t.fields.forEach(f => {
+      if (f.divider) {
+        fieldsHTML += `<div class="field-divider"></div>`;
+        return;
+      }
+      const badgeClass = f.badge ? `badge-${f.badge}` : 'badge-empty';
+      const badgeText  = f.badge ? f.badge.toUpperCase() : '';
+      const reqClass   = f.required ? 'req' : 'opt';
+      const reqChar    = f.required ? '*' : '○';
+      fieldsHTML += `
+        <div class="field">
+          <span class="field-badge ${badgeClass}">${badgeText}</span>
+          <span class="field-req ${reqClass}">${reqChar}</span>
+          <span class="field-name">${f.name}</span>
+          <span class="field-type">${f.type}</span>
+        </div>`;
+    });
+
+    el.innerHTML = `
+      <div class="table-header">
+        <div class="table-icon"></div>
+        <span class="table-name">${t.name}</span>
+        <span class="table-app">${t.app}</span>
+      </div>
+      <div class="table-fields">${fieldsHTML}</div>`;
+
+    // Table drag
+    el.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      draggingTable = el;
+      const rect = el.getBoundingClientRect();
+      dragOffX = (e.clientX - rect.left) / zoom;
+      dragOffY = (e.clientY - rect.top)  / zoom;
+      el.classList.add('dragging');
+    });
+
+    canvas.appendChild(el);
   });
-});
-
-document.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const cr = canvas.getBoundingClientRect();
-  dragging.style.left = (e.clientX - cr.left - ox) + 'px';
-  dragging.style.top  = (e.clientY - cr.top  - oy) + 'px';
-  drawConnections();
-});
-
-document.addEventListener('mouseup', () => {
-  if (dragging) dragging.classList.remove('dragging');
-  dragging = null;
-});
-
-// Connection drawing
-function getCenter(el) {
-  const r = el.getBoundingClientRect();
-  const cr = canvas.getBoundingClientRect();
-  return {
-    x: r.left - cr.left + r.width / 2,
-    y: r.top  - cr.top  + r.height / 2,
-    left: r.left - cr.left,
-    right: r.left - cr.left + r.width,
-    top: r.top - cr.top,
-    bottom: r.top - cr.top + r.height,
-    w: r.width,
-    h: r.height
-  };
 }
 
-function bestEdge(a, b) {
-  // pick left or right edge closest to target
-  const ax = a.left + a.w / 2;
-  const bx = b.left + b.w / 2;
-  const ay = a.top + a.h / 2;
-  const by = b.top + b.h / 2;
-
+// ── Connections ───────────────────────────────────────────────
+function getEdge(a, b) {
+  const ax = a.left + a.w / 2, ay = a.top + a.h / 2;
+  const bx = b.left + b.w / 2, by = b.top + b.h / 2;
   if (Math.abs(ax - bx) > Math.abs(ay - by)) {
-    // horizontal dominant
-    if (ax < bx) return { x1: a.right, y1: ay, x2: b.left, y2: by };
-    else         return { x1: a.left,  y1: ay, x2: b.right, y2: by };
+    return ax < bx
+      ? { x1: a.left + a.w, y1: ay, x2: b.left, y2: by }
+      : { x1: a.left, y1: ay, x2: b.left + b.w, y2: by };
   } else {
-    if (ay < by) return { x1: ax, y1: a.bottom, x2: bx, y2: b.top };
-    else         return { x1: ax, y1: a.top,    x2: bx, y2: b.bottom };
+    return ay < by
+      ? { x1: ax, y1: a.top + a.h, x2: bx, y2: b.top }
+      : { x1: ax, y1: a.top, x2: bx, y2: b.top + b.h };
   }
 }
 
-function bezier(p) {
-  const dx = Math.abs(p.x2 - p.x1) * 0.5;
-  return `M ${p.x1} ${p.y1} C ${p.x1 + (p.x2 > p.x1 ? dx : -dx)} ${p.y1}, ${p.x2 + (p.x2 > p.x1 ? -dx : dx)} ${p.y2}, ${p.x2} ${p.y2}`;
+function tableRect(el) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+  return {
+    left: (elRect.left - canvasRect.left) / zoom,
+    top:  (elRect.top  - canvasRect.top)  / zoom,
+    w:    elRect.width  / zoom,
+    h:    elRect.height / zoom,
+  };
 }
 
-const connections = [
-  { from: 't-empresa', to: 't-personalizacao', color: '#f76a9a', label: '1 → 1' },
-  { from: 't-empresa', to: 't-creditoextra',   color: '#f7c06a', label: '1 → N' },
-  { from: 't-empresa', to: 't-usuarioempresa', color: '#7c6af7', label: '1 → N' },
-  { from: 't-usuario', to: 't-usuarioempresa', color: '#6af7c0', label: '1 → N' },
-];
-
 function drawConnections() {
-  const svg = document.getElementById('svg');
-  svg.innerHTML = '';
+  if (!schema) return;
+  svgEl.innerHTML = '';
 
-  // defs for markers
+  // Compute canvas logical size for SVG
+  const w = canvas.scrollWidth / zoom;
+  const h = canvas.scrollHeight / zoom;
+  svgEl.setAttribute('width',  w);
+  svgEl.setAttribute('height', h);
+
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-  connections.forEach((c, i) => {
+
+  schema.connections.forEach((c, i) => {
     const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
     marker.setAttribute('id', `arrow${i}`);
     marker.setAttribute('markerWidth', '8');
@@ -480,39 +471,48 @@ function drawConnections() {
     marker.setAttribute('refX', '6');
     marker.setAttribute('refY', '3');
     marker.setAttribute('orient', 'auto');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M0,0 L0,6 L8,3 z');
-    path.setAttribute('fill', c.color);
-    path.setAttribute('opacity', '0.6');
-    marker.appendChild(path);
+    const mpath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    mpath.setAttribute('d', 'M0,0 L0,6 L8,3 z');
+    mpath.setAttribute('fill', c.color);
+    mpath.setAttribute('opacity', '0.6');
+    marker.appendChild(mpath);
     defs.appendChild(marker);
   });
-  svg.appendChild(defs);
+  svgEl.appendChild(defs);
 
-  connections.forEach((c, i) => {
-    const a = getCenter(document.getElementById(c.from));
-    const b = getCenter(document.getElementById(c.to));
-    const p = bestEdge(a, b);
+  schema.connections.forEach((c, i) => {
+    const fromEl = document.getElementById(c.from);
+    const toEl   = document.getElementById(c.to);
+    if (!fromEl || !toEl) return;
+
+    const a = tableRect(fromEl);
+    const b = tableRect(toEl);
+    const p = getEdge(a, b);
+
+    const dx = Math.abs(p.x2 - p.x1) * 0.5;
+    const cx1 = p.x1 + (p.x2 > p.x1 ? dx : -dx);
+    const cx2 = p.x2 + (p.x2 > p.x1 ? -dx : dx);
+    const d   = `M ${p.x1} ${p.y1} C ${cx1} ${p.y1}, ${cx2} ${p.y2}, ${p.x2} ${p.y2}`;
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', bezier(p));
+    path.setAttribute('d', d);
     path.setAttribute('class', 'conn-line');
     path.setAttribute('stroke', c.color);
     path.setAttribute('marker-end', `url(#arrow${i})`);
-    svg.appendChild(path);
+    svgEl.appendChild(path);
 
-    // label
     const mx = (p.x1 + p.x2) / 2;
     const my = (p.y1 + p.y2) / 2;
+
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', mx - 16); rect.setAttribute('y', my - 9);
-    rect.setAttribute('width', 32); rect.setAttribute('height', 16);
+    rect.setAttribute('width', 32);  rect.setAttribute('height', 16);
     rect.setAttribute('rx', 4);
     rect.setAttribute('fill', '#111118');
     rect.setAttribute('stroke', c.color);
     rect.setAttribute('stroke-opacity', '0.3');
     rect.setAttribute('stroke-width', '1');
-    svg.appendChild(rect);
+    svgEl.appendChild(rect);
 
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', mx); text.setAttribute('y', my + 4);
@@ -522,13 +522,279 @@ function drawConnections() {
     text.setAttribute('fill', c.color);
     text.setAttribute('opacity', '0.8');
     text.textContent = c.label;
-    svg.appendChild(text);
+    svgEl.appendChild(text);
   });
 }
 
-// Initial draw after layout
-setTimeout(drawConnections, 300);
-window.addEventListener('resize', drawConnections);
+// ── Zoom ──────────────────────────────────────────────────────
+function applyZoom(newZoom, originX, originY) {
+  newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, newZoom));
+  if (newZoom === zoom) return;
+
+  // Zoom toward origin point (viewport coords)
+  const vr = viewport.getBoundingClientRect();
+  const ox = (originX ?? vr.width  / 2);
+  const oy = (originY ?? vr.height / 2);
+
+  panX = ox - (ox - panX) * (newZoom / zoom);
+  panY = oy - (oy - panY) * (newZoom / zoom);
+  zoom = newZoom;
+
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+  drawConnections();
+}
+
+function fitToScreen() {
+  if (!schema || !schema.tables.length) return;
+
+  // Find bounding box of all tables
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  schema.tables.forEach(t => {
+    const el = document.getElementById(t.id);
+    if (!el) return;
+    const x = parseFloat(el.style.left);
+    const y = parseFloat(el.style.top);
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + w);
+    maxY = Math.max(maxY, y + h);
+  });
+
+  const pad    = 60;
+  const cw     = maxX - minX + pad * 2;
+  const ch     = maxY - minY + pad * 2;
+  const vr     = viewport.getBoundingClientRect();
+  const scaleX = vr.width  / cw;
+  const scaleY = vr.height / ch;
+  const newZoom = Math.min(scaleX, scaleY, ZOOM_MAX);
+
+  zoom = newZoom;
+  panX = -minX * zoom + pad * zoom + (vr.width  - cw * zoom) / 2;
+  panY = -minY * zoom + pad * zoom + (vr.height - ch * zoom) / 2;
+
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+  drawConnections();
+}
+
+// ── Event listeners ───────────────────────────────────────────
+document.getElementById('btn-plus').addEventListener('click', () => applyZoom(zoom + ZOOM_STEP));
+document.getElementById('btn-minus').addEventListener('click', () => applyZoom(zoom - ZOOM_STEP));
+document.getElementById('btn-fit').addEventListener('click', fitToScreen);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === '+' || e.key === '=') applyZoom(zoom + ZOOM_STEP);
+  if (e.key === '-')                  applyZoom(zoom - ZOOM_STEP);
+  if (e.key === '0')                  fitToScreen();
+});
+
+// Scroll to zoom
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const vr = viewport.getBoundingClientRect();
+  const ox = e.clientX - vr.left;
+  const oy = e.clientY - vr.top;
+  const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+  applyZoom(zoom + delta, ox, oy);
+}, { passive: false });
+
+// Pan canvas
+viewport.addEventListener('mousedown', e => {
+  if (draggingTable) return;
+  isPanning = true;
+  panStartX  = e.clientX;
+  panStartY  = e.clientY;
+  panOriginX = panX;
+  panOriginY = panY;
+});
+
+document.addEventListener('mousemove', e => {
+  if (draggingTable) {
+    const cr = canvas.getBoundingClientRect();
+    const x  = (e.clientX - cr.left) / zoom - dragOffX;
+    const y  = (e.clientY - cr.top)  / zoom - dragOffY;
+    draggingTable.style.left = x + 'px';
+    draggingTable.style.top  = y + 'px';
+    drawConnections();
+    return;
+  }
+
+  if (isPanning) {
+    panX = panOriginX + (e.clientX - panStartX);
+    panY = panOriginY + (e.clientY - panStartY);
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    drawConnections();
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  if (draggingTable) draggingTable.classList.remove('dragging');
+  draggingTable = null;
+  isPanning = false;
+});
+
+// ── Schema inline ─────────────────────────────────────────────
+const SCHEMA = {
+  "tables": [
+    {
+      "id": "t-usuario", "name": "Usuario", "app": "usuarios", "theme": "t-usuario",
+      "x": 60, "y": 60, "delay": 0.1,
+      "fields": [
+        { "badge": "pk", "required": true,  "name": "id",               "type": "BigInt" },
+        { "badge": "ui", "required": true,  "name": "public_id",        "type": "UUID" },
+        { "divider": true },
+        { "badge": "ui", "required": true,  "name": "email",            "type": "Email" },
+        {                 "required": true,  "name": "nome",             "type": "Char(255)" },
+        {                 "required": false, "name": "telefone",         "type": "Char(11)" },
+        { "divider": true },
+        {                 "required": true,  "name": "is_active",        "type": "Bool" },
+        {                 "required": true,  "name": "is_staff",         "type": "Bool" },
+        { "divider": true },
+        {                 "required": true,  "name": "date_joined",      "type": "DateTime" },
+        {                 "required": true,  "name": "data_atualizacao", "type": "DateTime" }
+      ]
+    },
+    {
+      "id": "t-empresa", "name": "Empresa", "app": "empresas", "theme": "t-empresa",
+      "x": 380, "y": 60, "delay": 0.15,
+      "fields": [
+        { "badge": "pk", "required": true,  "name": "id",               "type": "BigInt" },
+        { "badge": "ui", "required": true,  "name": "public_id",        "type": "UUID" },
+        { "divider": true },
+        { "badge": "ui", "required": true,  "name": "cnpj",             "type": "Char(14)" },
+        {                 "required": true,  "name": "razao_social",     "type": "Char(255)" },
+        {                 "required": true,  "name": "nome_fantasia",    "type": "Char(255)" },
+        { "badge": "ui", "required": true,  "name": "slug",             "type": "Slug(255)" },
+        {                 "required": true,  "name": "status",           "type": "Choice" },
+        {                 "required": false, "name": "email",            "type": "Email" },
+        {                 "required": false, "name": "telefone",         "type": "Char(11)" },
+        { "divider": true },
+        {                 "required": true,  "name": "cota_mensal",      "type": "Int" },
+        {                 "required": true,  "name": "creditos_extras",  "type": "Int" },
+        {                 "required": true,  "name": "consumo_mes",      "type": "Int" },
+        {                 "required": false, "name": "mes_referencia",   "type": "Date" },
+        { "divider": true },
+        {                 "required": true,  "name": "data_cadastro",    "type": "DateTime" },
+        {                 "required": true,  "name": "data_atualizacao", "type": "DateTime" }
+      ]
+    },
+    {
+      "id": "t-personalizacao", "name": "PersonalizacaoEmpresa", "app": "empresas", "theme": "t-personalizacao",
+      "x": 740, "y": 60, "delay": 0.2,
+      "fields": [
+        { "badge": "pk", "required": true,  "name": "id",               "type": "BigInt" },
+        { "badge": "fk", "required": true,  "name": "empresa_id",       "type": "→ Empresa" },
+        { "divider": true },
+        {                 "required": true,  "name": "cor_primaria",     "type": "Char(7)" },
+        {                 "required": true,  "name": "cor_secundaria",   "type": "Char(7)" },
+        {                 "required": false, "name": "logo",             "type": "URL" },
+        {                 "required": true,  "name": "data_atualizacao", "type": "DateTime" }
+      ]
+    },
+    {
+      "id": "t-creditoextra", "name": "CreditoExtra", "app": "empresas", "theme": "t-creditoextra",
+      "x": 740, "y": 310, "delay": 0.25,
+      "fields": [
+        { "badge": "pk", "required": true,  "name": "id",          "type": "BigInt" },
+        { "badge": "fk", "required": true,  "name": "empresa_id",  "type": "→ Empresa" },
+        { "divider": true },
+        {                 "required": true,  "name": "quantidade",  "type": "Int" },
+        {                 "required": false, "name": "descricao",   "type": "Char(255)" },
+        {                 "required": true,  "name": "data_compra", "type": "DateTime" }
+      ]
+    },
+    {
+      "id": "t-usuarioempresa", "name": "UsuarioEmpresa", "app": "empresas", "theme": "t-usuarioempresa",
+      "x": 380, "y": 560, "delay": 0.3,
+      "fields": [
+        { "badge": "pk", "required": true, "name": "id",           "type": "BigInt" },
+        { "badge": "fk", "required": true, "name": "usuario_id",   "type": "→ Usuario" },
+        { "badge": "fk", "required": true, "name": "empresa_id",   "type": "→ Empresa" },
+        { "divider": true },
+        {                 "required": true, "name": "role",         "type": "Choice" },
+        {                 "required": true, "name": "ativo",        "type": "Bool" },
+        {                 "required": true, "name": "data_vinculo", "type": "DateTime" }
+      ]
+    },
+    {
+      "id": "t-cliente", "name": "Cliente", "app": "clientes", "theme": "t-cliente",
+      "x": 1060, "y": 60, "delay": 0.35,
+      "fields": [
+        { "badge": "pk", "required": true,  "name": "id",                   "type": "BigInt" },
+        { "badge": "ui", "required": true,  "name": "public_id",            "type": "UUID" },
+        { "badge": "fk", "required": true,  "name": "empresa_id",           "type": "→ Empresa" },
+        { "divider": true },
+        {                 "required": true,  "name": "nome",                 "type": "Char(150)" },
+        {                 "required": true,  "name": "sobrenome",            "type": "Char(150)" },
+        {                 "required": false, "name": "data_nascimento",      "type": "Date" },
+        {                 "required": false, "name": "nacionalidade",        "type": "Char(2)" },
+        { "divider": true },
+        {                 "required": false, "name": "passaporte",           "type": "Char(20)" },
+        {                 "required": false, "name": "passaporte_emissao",   "type": "Date" },
+        {                 "required": false, "name": "passaporte_expiracao", "type": "Date" },
+        {                 "required": false, "name": "passaporte_pais",      "type": "Char(2)" },
+        { "divider": true },
+        {                 "required": false, "name": "email",                "type": "Email" },
+        {                 "required": false, "name": "rede_social",          "type": "Char(255)" },
+        { "divider": true },
+        {                 "required": false, "name": "observacoes",          "type": "Text" },
+        {                 "required": true,  "name": "ativo",                "type": "Bool" },
+        { "divider": true },
+        { "badge": "fk", "required": false, "name": "criado_por_id",        "type": "→ Usuario" },
+        { "badge": "fk", "required": false, "name": "atualizado_por_id",    "type": "→ Usuario" },
+        {                 "required": true,  "name": "data_cadastro",        "type": "DateTime" },
+        {                 "required": true,  "name": "data_atualizacao",     "type": "DateTime" }
+      ]
+    },
+    {
+      "id": "t-clientedocumento", "name": "ClienteDocumento", "app": "clientes", "theme": "t-clientedocumento",
+      "x": 1060, "y": 660, "delay": 0.4,
+      "fields": [
+        { "badge": "pk", "required": true, "name": "id",         "type": "BigInt" },
+        { "badge": "fk", "required": true, "name": "cliente_id", "type": "→ Cliente" },
+        { "divider": true },
+        {                 "required": true, "name": "tipo",       "type": "Choice" },
+        {                 "required": true, "name": "numero",     "type": "Char(50)" }
+      ]
+    },
+    {
+      "id": "t-clientetelefone", "name": "ClienteTelefone", "app": "clientes", "theme": "t-clientetelefone",
+      "x": 1340, "y": 660, "delay": 0.45,
+      "fields": [
+        { "badge": "pk", "required": true,  "name": "id",         "type": "BigInt" },
+        { "badge": "fk", "required": true,  "name": "cliente_id", "type": "→ Cliente" },
+        { "divider": true },
+        {                 "required": true,  "name": "tipo",       "type": "Choice" },
+        {                 "required": false, "name": "nome",       "type": "Char(150)" },
+        {                 "required": true,  "name": "numero",     "type": "Char(20)" }
+      ]
+    }
+  ],
+  "connections": [
+    { "from": "t-empresa",  "to": "t-personalizacao",   "color": "#f76a9a", "label": "1 → 1" },
+    { "from": "t-empresa",  "to": "t-creditoextra",     "color": "#f7c06a", "label": "1 → N" },
+    { "from": "t-empresa",  "to": "t-usuarioempresa",   "color": "#7c6af7", "label": "1 → N" },
+    { "from": "t-usuario",  "to": "t-usuarioempresa",   "color": "#6af7c0", "label": "1 → N" },
+    { "from": "t-empresa",  "to": "t-cliente",          "color": "#6aaaf7", "label": "1 → N" },
+    { "from": "t-usuario",  "to": "t-cliente",          "color": "#6aaaf7", "label": "1 → N" },
+    { "from": "t-cliente",  "to": "t-clientedocumento", "color": "#f7a06a", "label": "1 → N" },
+    { "from": "t-cliente",  "to": "t-clientetelefone",  "color": "#c4b5fd", "label": "1 → N" }
+  ]
+};
+
+// ── Init ──────────────────────────────────────────────────────
+(() => {
+  schema = SCHEMA;
+  document.getElementById('badge-tables').textContent = `${schema.tables.length} tabelas`;
+  renderTables(schema.tables);
+  document.getElementById('loading').style.display = 'none';
+  setTimeout(() => { drawConnections(); fitToScreen(); }, 350);
+})();
 </script>
 </body>
 </html>

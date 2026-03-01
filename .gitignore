@@ -8,3 +8,4 @@ staticfiles/
 data/
 logs/
 ./data/redis
+scripts/
