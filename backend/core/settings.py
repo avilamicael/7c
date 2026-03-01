@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'apps.clientes',
     'apps.fornecedores',
     'apps.financeiro',
+    'apps.kanban',
 
 ]
 

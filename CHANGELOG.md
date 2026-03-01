@@ -1,5 +1,25 @@
 # Changelog — Backend
 
+## [v1.6] — 2026-03-01
+
+### Alterações
+- `apps/core/models.py`: criado modelo `AuditLog` genérico com campos `empresa`, `usuario`, `acao`, `modulo`, `objeto_tipo`, `objeto_id`, `objeto_repr`, `payload`, `ip` e `data`; índices em `(empresa, -data)`, `(modulo, objeto_tipo, objeto_id)` e `(usuario, -data)`
+- `apps/core/audit.py`: criado utilitário `registrar_log()` centralizando gravação de auditoria com extração de IP via `HTTP_X_FORWARDED_FOR`
+- `apps/core/apps.py`: criado `CoreConfig` com `default_auto_field`
+- `apps/kanban/models.py`: criados modelos `KanbanBoard`, `KanbanColuna` e `KanbanCard`; `KanbanCardMovimento` descartado em favor do `AuditLog`; `unique_together` em `posicao` removido — unicidade controlada na camada de aplicação
+- `apps/empresas/models.py`: adicionado campo `limite_boards` (`PositiveIntegerField`, default=1) para controle futuro de cobrança por board
+
+### Arquivos modificados
+- `apps/core/models.py`
+- `apps/core/audit.py`
+- `apps/core/apps.py`
+- `apps/kanban/models.py`
+- `apps/empresas/models.py`
+
+### Impacto
+- Segurança: auditoria centralizada cobre todos os módulos; IP registrado por ação; escopo de empresa isolado em todos os modelos kanban
+- Performance: índices compostos no `AuditLog` para queries por empresa, módulo e usuário; `select_related` será aplicado nas views
+
 ## [v1.5] — 2026-03-01
 
 ### Alterações
