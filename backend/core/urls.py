@@ -8,6 +8,8 @@ urlpatterns = [
     path('api/auth/',     include('apps.usuarios.urls')),
     path('api/empresas/', include('apps.empresas.urls')),
     path('api/clientes/', include('apps.clientes.urls')),
+    path('api/fornecedores/', include('apps.fornecedores.urls')),
+    path('api/financeiro/', include('apps.financeiro.urls')),
 ]
 
 if settings.DEBUG:
