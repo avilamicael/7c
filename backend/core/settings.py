@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
+    'apps.core',
     'apps.usuarios',
     'apps.empresas',
     'apps.clientes',
@@ -43,8 +44,21 @@ INSTALLED_APPS = [
 
 ]
 
+ASGI_APPLICATION = 'core.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [config('REDIS_URL', default='redis://redis:6379/0')],
+            'capacity': 1500,
+            'expiry': 10,
+        },
+    },
+}
+
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # primeiro da lista!
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

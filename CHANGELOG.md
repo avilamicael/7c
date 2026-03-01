@@ -1,5 +1,31 @@
 # Changelog — Backend
 
+## [v1.5] — 2026-03-01
+
+### Alterações
+- `core/asgi.py`: migrado de WSGI puro para `ProtocolTypeRouter` com suporte a HTTP e WebSocket
+- `apps/core/middleware.py`: criado `JwtAuthMiddleware` para autenticação WebSocket via JWT na query string
+- `apps/core/routing.py`: criado arquivo de rotas WebSocket (vazio, aguardando consumers)
+- `core/settings.py`: adicionados `channels`, `apps.core` em `INSTALLED_APPS`; adicionadas configurações `ASGI_APPLICATION` e `CHANNEL_LAYERS` apontando para Redis
+- `requirements.txt`: adicionados `channels==4.1.0`, `channels-redis==4.2.0`, `daphne`
+- `Dockerfile`: `CMD` atualizado de `gunicorn` para `daphne`
+- `docker-compose.yml`: `command` do serviço `backend` atualizado de `gunicorn` para `daphne -b 0.0.0.0 -p 8000 core.asgi:application`
+- `nginx.conf`: adicionado bloco `location /ws/` com headers `Upgrade` e `Connection` para suporte a WebSocket; `proxy_read_timeout 86400` para manter conexões persistentes
+
+### Arquivos modificados
+- `core/asgi.py`
+- `core/settings.py`
+- `requirements.txt`
+- `Dockerfile`
+- `docker-compose.yml`
+- `nginx.conf`
+- `apps/core/middleware.py`
+- `apps/core/routing.py`
+
+### Impacto
+- Segurança: conexões WebSocket autenticadas via JWT no handshake; `AllowedHostsOriginValidator` rejeita origens não autorizadas
+- Performance: Redis já existente reutilizado como channel layer; sem overhead adicional nas rotas HTTP existentes
+
 ## [v1.4.1] — 2026-02-28
 
 ### Alterações

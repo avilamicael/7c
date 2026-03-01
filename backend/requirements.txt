@@ -8,3 +8,6 @@ gunicorn
 drf-spectacular
 django-redis
 djangorestframework-simplejwt[blacklist]
+channels==4.1.0
+channels-redis==4.2.0
+daphne
