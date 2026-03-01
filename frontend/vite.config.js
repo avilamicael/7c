@@ -12,6 +12,10 @@ export default defineConfig({
   },
   server: {
     host: true,
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
     proxy: {
       '/api': {
         target: 'http://backend:8000',

@@ -4,7 +4,6 @@ import {
   IconDashboard,
   IconHelp,
   IconSearch,
-  IconSettings,
   IconUsers,
   IconLayoutKanban,
   IconCash,
@@ -13,7 +12,6 @@ import {
 } from "@tabler/icons-react"
 
 import { Separator } from "@/components/ui/separator"
-// import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -29,46 +27,27 @@ import {
 
 const DEFAULT_LOGO = "/logoAuth.png"
 
-const data = {
-  user: {
-    name: "Micael",
-    email: "micael@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  // Logo da empresa vinda do backend — null usa o padrão
-  // TODO: substituir por contexto/store quando conectar a API
-  // GET /api/empresas/minha/personalizacao/ → { logo: "https://..." }
-  empresa: {
-    nome: "7C Turismo & Consultoria",
-    logo: null,
-  },
-  navMain: [
-    { title: "Aéreo", url: "/", icon: IconPlane },
-    { title: "Cotação", url: "/", icon: IconDashboard },
-  ],
-  navCrm: [
-    { title: "Dashboard", url: "#", icon: IconDashboard },
-    { title: "Kanban", url: "#", icon: IconLayoutKanban },
-    { title: "Clientes", url: "/clientes", icon: IconUsers },
-    { title: "Financeiro", url: "#", icon: IconCash },
-    { title: "Tarefas", url: "#", icon: IconChecklist },
-  ],
-  navSecondary: [
-    { title: "Configurações", url: "/configuracoes", icon: IconSettings },
-    { title: "Ajuda", url: "#", icon: IconHelp },
-    { title: "Procurar", url: "#", icon: IconSearch },
-  ],
-  // documents: [
-  //   { name: "Dashboard", url: "#", icon: IconDashboard },
-  //   { name: "Kanban", url: "#", icon: IconLayoutKanban },
-  //   { name: "Clientes", url: "/clientes", icon: IconUsers },
-  //   { name: "Financeiro", url: "#", icon: IconCash },
-  //   { name: "Tarefas", url: "#", icon: IconChecklist },
-  // ],
-}
+const navMain = [
+  { title: "Aéreo", url: "/", icon: IconPlane },
+  { title: "Cotação", url: "/", icon: IconDashboard },
+]
 
-export function AppSidebar({ ...props }) {
-  const logoSrc = data.empresa.logo || DEFAULT_LOGO
+const navCrm = [
+  { title: "Dashboard", url: "#", icon: IconDashboard },
+  { title: "Kanban", url: "#", icon: IconLayoutKanban },
+  { title: "Clientes", url: "/clientes", icon: IconUsers },
+  { title: "Financeiro", url: "#", icon: IconCash },
+  { title: "Tarefas", url: "#", icon: IconChecklist },
+]
+
+const navSecondary = [
+  { title: "Ajuda", url: "#", icon: IconHelp },
+  { title: "Procurar", url: "#", icon: IconSearch },
+]
+
+export function AppSidebar({ usuario, empresa, ...props }) {
+  const logoSrc = empresa?.personalizacao?.logo || DEFAULT_LOGO
+  const nomeEmpresa = empresa?.nome_fantasia || "7C Turismo & Consultoria"
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -79,11 +58,11 @@ export function AppSidebar({ ...props }) {
               <Link to="/">
                 <img
                   src={logoSrc}
-                  alt={`Logo ${data.empresa.nome}`}
+                  alt={`Logo ${nomeEmpresa}`}
                   className="!size-5 object-contain"
                   onError={(e) => { e.currentTarget.src = DEFAULT_LOGO }}
                 />
-                <span className="text-base font-semibold">{data.empresa.nome}</span>
+                <span className="text-base font-semibold">{nomeEmpresa}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -91,12 +70,15 @@ export function AppSidebar({ ...props }) {
         <Separator />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} crmItems={data.navCrm} />
-        {/* <NavDocuments items={data.documents} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} crmItems={navCrm} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={{
+          name: usuario?.nome || "...",
+          email: usuario?.email || "...",
+          avatar: usuario?.avatar_url || null,
+        }} />
       </SidebarFooter>
     </Sidebar>
   )

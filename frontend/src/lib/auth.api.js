@@ -1,4 +1,4 @@
-import { request, authHeaders } from "./api";
+import { request } from "./api";
 
 export const authApi = {
   login: (email, password) =>
@@ -16,7 +16,7 @@ export const authApi = {
   logout: (refreshToken) =>
     request("/auth/logout/", {
       method: "POST",
-      headers: authHeaders(),
+      headers: { Authorization: `Bearer ${localStorage.getItem("access")}` },
       body: JSON.stringify({ refresh: refreshToken }),
     }),
 };

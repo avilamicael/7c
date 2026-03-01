@@ -1,27 +1,35 @@
 import { request, authHeaders } from "./api";
 
 export const empresasApi = {
-  buscar: () =>
-    request("/empresas/minha/", {
-      headers: authHeaders(),
-    }),
+  buscar: async () => {
+    const res = await request("/empresas/minha/", { headers: authHeaders() });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 
-  editar: (data) =>
-    request("/empresas/minha/", {
+  editar: async (data) => {
+    const res = await request("/empresas/minha/", {
       method: "PATCH",
       headers: authHeaders(),
       body: JSON.stringify(data),
-    }),
+    });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 
-  buscarPersonalizacao: () =>
-    request("/empresas/minha/personalizacao/", {
-      headers: authHeaders(),
-    }),
+  buscarPersonalizacao: async () => {
+    const res = await request("/empresas/minha/personalizacao/", { headers: authHeaders() });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 
-  editarPersonalizacao: (data) =>
-    request("/empresas/minha/personalizacao/", {
+  editarPersonalizacao: async (data) => {
+    const res = await request("/empresas/minha/personalizacao/", {
       method: "PATCH",
       headers: authHeaders(),
-      body: JSON.stringify(data),
-    }),
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 };

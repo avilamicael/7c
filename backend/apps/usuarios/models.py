@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from apps.core.validators import validar_telefone
+from apps.core.validators import validar_cep, validar_telefone
 
 
 class UsuarioManager(BaseUserManager):
@@ -25,6 +25,12 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     public_id        = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     email            = models.EmailField(unique=True)
     nome             = models.CharField(max_length=255)
+    sobrenome        = models.CharField(max_length=255, blank=True, default="")
+    endereco         = models.CharField(max_length=500, blank=True, default="")
+    cidade           = models.CharField(max_length=100, blank=True, default="")
+    uf               = models.CharField(max_length=2, blank=True, default="")
+    cep              = models.CharField(max_length=8, blank=True, default="", validators=[validar_cep])
+    avatar           = models.ImageField(upload_to="avatars/%Y/%m/", null=True, blank=True,) 
     telefone         = models.CharField(max_length=11, blank=True, null=True, validators=[validar_telefone])
     is_active        = models.BooleanField(default=True)
     is_staff         = models.BooleanField(default=False)

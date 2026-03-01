@@ -1,3 +1,5 @@
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -26,11 +28,29 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { authApi } from "@/lib/auth.api"
 
-export function NavUser({
-  user
-}) {
+export function NavUser({ user }) {
   const { isMobile } = useSidebar()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+
+  const handleLogout = async () => {
+    if (loading) return
+    setLoading(true)
+
+    const refresh = localStorage.getItem("refresh")
+
+    try {
+      if (refresh) {
+        await authApi.logout(refresh)
+      }
+    } finally {
+      localStorage.removeItem("access")
+      localStorage.removeItem("refresh")
+      navigate("/login")
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -74,7 +94,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
                 <IconUserCircle />
                 Conta
               </DropdownMenuItem>
@@ -88,13 +108,17 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <IconLogout />
-              Sair
+            <DropdownMenuItem
+              onClick={handleLogout}
+              disabled={loading}
+              className="text-red-500 focus:text-red-500"
+            >
+              <IconLogout className="text-red-500" />
+              {loading ? "Saindo..." : "Sair"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }

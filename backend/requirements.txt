@@ -14,3 +14,4 @@ daphne
 celery==5.3.6
 django-celery-beat==2.6.0
 django-celery-results==2.5.1
+Pillow>=10.0.0

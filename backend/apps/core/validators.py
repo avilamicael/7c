@@ -40,3 +40,6 @@ def validar_cor_hex(valor: str):
     if not re.fullmatch(r"#[0-9A-Fa-f]{6}", valor):
         raise ValidationError("Cor deve estar no formato hexadecimal (#RRGGBB).")
 
+def validar_cep(value):
+    if value and not re.fullmatch(r"\d{8}", value):
+        raise ValidationError("CEP deve conter 8 dígitos numéricos.")
