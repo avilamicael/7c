@@ -1,5 +1,20 @@
 # Changelog — Backend
 
+## [v1.9] — 2026-03-01
+
+### Alterações
+- `apps/kanban/models.py`: adicionado modelo `KanbanColunaAcao` com tipos `ALTERAR_STATUS_TAREFA`, `ALTERAR_PRIORIDADE`, `NOTIFICAR_RESPONSAVEL` e `NOTIFICAR_EMPRESA`; campo `parametro` guarda o valor da ação (ex: `"CONCLUIDA"`, `"URGENTE"`); `PARAMETROS_VALIDOS` no model centraliza validação por tipo; `UniqueConstraint` em `(coluna, tipo)` impede duplicatas
+- `apps/kanban/models.py`: adicionado `GenericRelation` para `Notificacao` em `KanbanCard`
+- `apps/tarefas/models.py`: criado modelo `Tarefa` com `OneToOneField` opcional para `KanbanCard`; campos `lembrete_em` e `lembrete_notificado` para controle do Celery beat; `GenericRelation` para `Notificacao`
+
+### Arquivos modificados
+- `apps/kanban/models.py`
+- `apps/tarefas/models.py`
+
+### Impacto
+- Segurança: `UniqueConstraint` em `KanbanColunaAcao` impede configurações duplicadas por coluna
+- Performance: índice em `(lembrete_em, lembrete_notificado)` otimiza query do Celery beat; `OneToOneField` no card permite lookup direto `card.tarefa` sem query extra
+
 ## [v1.8] — 2026-03-01
 
 ### Alterações
