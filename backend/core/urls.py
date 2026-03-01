@@ -10,6 +10,9 @@ urlpatterns = [
     path('api/clientes/', include('apps.clientes.urls')),
     path('api/fornecedores/', include('apps.fornecedores.urls')),
     path('api/financeiro/', include('apps.financeiro.urls')),
+    path("api/kanban/", include("apps.kanban.urls")),
+
+
 ]
 
 if settings.DEBUG:

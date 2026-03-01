@@ -20,3 +20,10 @@ def get_empresa_do_admin(user):
         return vinculo.empresa
     except UsuarioEmpresa.DoesNotExist:
         raise PermissionDenied()
+    
+def get_membros_empresa(empresa):
+    return (
+        UsuarioEmpresa.objects
+        .filter(empresa=empresa, ativo=True)
+        .values_list("usuario_id", flat=True)
+    )

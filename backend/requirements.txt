@@ -11,3 +11,6 @@ djangorestframework-simplejwt[blacklist]
 channels==4.1.0
 channels-redis==4.2.0
 daphne
+celery==5.3.6
+django-celery-beat==2.6.0
+django-celery-results==2.5.1

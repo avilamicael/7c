@@ -25,7 +25,7 @@ class Empresa(models.Model):
     cota_mensal      = models.PositiveIntegerField(default=0)
     creditos_extras  = models.PositiveIntegerField(default=0)
     consumo_mes      = models.PositiveIntegerField(default=0)
-    limite_boards    = models.PositiveIntegerField(default=1)
+    limite_boards    = models.PositiveIntegerField(default=2)
     mes_referencia   = models.DateField(null=True, blank=True)
     data_cadastro    = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)

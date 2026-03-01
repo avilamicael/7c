@@ -28,7 +28,7 @@ class KanbanColuna(models.Model):
     board = models.ForeignKey(KanbanBoard, on_delete=models.CASCADE, related_name="colunas")
     nome = models.CharField(max_length=100)
     posicao = models.PositiveIntegerField()
-    cor = models.CharField(max_length=7, default="#7c6af7")
+    cor = models.CharField(max_length=7, default="#5dca6c")
     limite_wip = models.PositiveIntegerField(null=True, blank=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
 

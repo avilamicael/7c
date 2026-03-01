@@ -13,8 +13,8 @@
 ---
 
 ## ⬜ Etapa 2 — Backend Kanban + Tarefas
-- [ ] Definir arquitetura dos models
-- [ ] `apps/kanban/models.py` — `KanbanBoard`, `KanbanColuna`, `KanbanCard`, `Tarefa`
+- [x] Definir arquitetura dos models
+- [x] `apps/kanban/models.py` — `KanbanBoard`, `KanbanColuna`, `KanbanCard`, `Tarefa`
 - [ ] `apps/kanban/serializers.py`
 - [ ] `apps/kanban/views.py`
 - [ ] `apps/kanban/urls.py`

@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
+    "django_celery_beat",
+    "django_celery_results",
     'apps.core',
     'apps.usuarios',
     'apps.empresas',
@@ -57,6 +59,13 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+CELERY_BROKER_URL        = config("REDIS_URL", default="redis://redis:6379/0")
+CELERY_RESULT_BACKEND    = config("REDIS_URL", default="redis://redis:6379/0")
+CELERY_TIMEZONE          = "America/Sao_Paulo"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_BEAT_SCHEDULER    = "django_celery_beat.schedulers:DatabaseScheduler"
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

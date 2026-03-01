@@ -52,3 +52,31 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+  celery_worker:
+    build: ./backend
+    restart: always
+    env_file: .env
+    command: celery -A core worker --loglevel=info --concurrency=4
+    volumes:
+      - ./data/logs/backend:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build: ./backend
+    restart: always
+    env_file: .env
+    command: celery -A core beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./data/logs/backend:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started

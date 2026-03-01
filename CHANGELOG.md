@@ -1,5 +1,57 @@
 # Changelog — Backend
 
+## [v1.8] — 2026-03-01
+
+### Alterações
+- `apps/core/models.py`: adicionados modelos `Notificacao` e `NotificacaoDestinatario`; `Notificacao` usa `GenericForeignKey` para referenciar qualquer model do sistema como origem; `NotificacaoDestinatario` isola entrega por usuário e canal com controle de `status`, `lida`, `tentativas` e `data_leitura`; `UniqueConstraint` em `(notificacao, usuario, canal)` evita duplicatas
+- `apps/core/services.py`: criado `NotificacaoService` com funções explícitas por evento — `tarefa_atribuida`, `tarefa_concluida`, `tarefa_lembrete`, `tarefa_reagendada` e `card_movido`; despacho para Celery via import lazy em `_despachar()` evitando circular import
+- `apps/core/tasks.py`: criada task `entregar_notificacao` com retry automático (max 3, delay 60s); worker WEB envia via WebSocket usando `async_to_sync`; criada task `processar_lembretes` para Celery beat (a cada 5min) buscando tarefas com `lembrete_em <= agora` e `lembrete_notificado=False`
+- `apps/core/consumers.py`: criado `NotificacaoConsumer` (AsyncWebsocketConsumer); ao conectar envia as 50 últimas não lidas; aceita ações `marcar_lida` e `marcar_todas_lidas` do frontend; handler `notificacao_nova` recebe eventos do Celery via `group_send`
+- `apps/core/routing.py`: adicionada rota `ws/notificacoes/` apontando para `NotificacaoConsumer`
+- `apps/core/utils.py`: adicionada função `get_membros_empresa(empresa)` retornando `QuerySet` de `usuario_id` dos membros ativos via `values_list("usuario_id", flat=True)`
+- `core/celery.py`: criado com `autodiscover_tasks` e beat schedule para `processar_lembretes` a cada 5min
+- `core/__init__.py`: expõe `celery_app` para que Django carregue o Celery no boot
+- `core/settings.py`: adicionados `django_celery_beat`, `django_celery_results` em `INSTALLED_APPS`; adicionadas configurações `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND`, `CELERY_TIMEZONE`, `CELERY_BEAT_SCHEDULER`
+- `docker-compose.yml`: adicionados serviços `celery_worker` e `celery_beat` com `build: ./backend`, `restart: always` e healthcheck nas dependências
+
+### Arquivos modificados
+- `apps/core/models.py`
+- `apps/core/services.py`
+- `apps/core/tasks.py`
+- `apps/core/consumers.py`
+- `apps/core/routing.py`
+- `apps/core/utils.py`
+- `core/celery.py`
+- `core/__init__.py`
+- `core/settings.py`
+- `docker-compose.yml`
+
+### Impacto
+- Segurança: WebSocket autenticado via JWT já existente; `marcar_lida` valida `usuario_id` no filtro impedindo que um usuário marque notificação de outro; `bulk_create` com `ignore_conflicts=True` respeita `UniqueConstraint` sem expor erro ao cliente
+- Performance: `bulk_create` para `NotificacaoDestinatario` evita N queries ao notificar empresa inteira; entrega assíncrona via Celery não bloqueia a request; beat busca apenas tarefas com `lembrete_notificado=False` evitando reprocessamento
+
+---
+
+## [v1.7] — 2026-03-01
+
+### Alterações
+- `apps/kanban/serializers.py`: criados `KanbanBoardSerializer` (leitura com colunas aninhadas), `KanbanBoardWriteSerializer`, `KanbanColunaSerializer`, `KanbanColunaWriteSerializer` e `KanbanCardSerializer`; `KanbanCardSerializer` valida pertencimento da `coluna` e do `responsavel` ao escopo da empresa via `context["empresa"]`
+- `apps/kanban/views.py`: criados `KanbanBoardViewSet`, `KanbanColunaViewSet` e `KanbanCardViewSet`; boards e colunas exigem `IsAdminEmpresa` para write (create/update/destroy), membro pode apenas listar/detalhar; cards permitem write para qualquer membro; criação de board valida `limite_boards` da empresa antes de persistir; empresa cacheada em `self._empresa` via `hasattr` eliminando query duplicada por request
+- `apps/kanban/urls.py`: rotas `api/kanban/boards/`, `api/kanban/boards/<uuid>/colunas/` e `api/kanban/cards/` registradas com `lookup_field = "public_id"`
+- `core/urls.py`: adicionada rota `api/kanban/` apontando para `apps.kanban.urls`
+- `api-documentation.docx`: atualizado para v1.7; adicionada seção 10 (Kanban) com tabelas de endpoints e bodies para Boards, Colunas e Cards
+
+### Arquivos modificados
+- `apps/kanban/serializers.py`
+- `apps/kanban/views.py`
+- `apps/kanban/urls.py`
+- `core/urls.py`
+- `api-documentation.docx`
+
+### Impacto
+- Segurança: escopo de empresa isolado em todos os endpoints kanban; coluna e responsável validados contra empresa no serializer; `IsAdminEmpresa` verificado explicitamente nos métodos write de board e coluna — operadores não conseguem criar/editar estrutura do board
+- Performance: empresa cacheada em `self._empresa` por request; cards carregados com `select_related("coluna", "responsavel", "criado_por")` evitando N+1; boards listados com `prefetch_related("colunas")`
+
 ## [v1.6] — 2026-03-01
 
 ### Alterações
@@ -187,4 +239,3 @@
 ### Impacto
 - Segurança: rate limit no login agora funciona efetivamente. Erros 500 por `DoesNotExist` eliminados. Escopo de empresa isolado por `OneToOneField` — impossível vazar dados entre empresas
 - Performance: acesso a empresa via `user.empresa_vinculo` (OneToOne) elimina query extra. `select_related` e `prefetch_related` mantidos nas views de cliente
-
