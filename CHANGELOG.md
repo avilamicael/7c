@@ -1,5 +1,27 @@
 # Changelog — Backend
 
+## [v1.10] — 2026-03-01
+
+### Alterações
+- `apps/kanban/views.py`: corrigido import de `IsAdminEmpresa` e `IsMembroEmpresa` — era `apps.usuarios.permissions`, passou a ser `apps.core.permissions`
+- `apps/usuarios/views.py`: adicionado `handle_exception()` em `LoginView` para retornar `{"detail": "E-mail ou senha inválidos."}` com status 401 em vez de resposta vazia ao errar credenciais
+- `frontend/src/lib/api.js`: criado cliente HTTP centralizado com função `request()` base e módulo `authApi` com métodos `login()`, `refresh()` e `logout()`; tokens JWT lidos do `localStorage` no header `Authorization`
+- `frontend/src/pages/login.jsx`: criada tela de login completa com layout two-column (branding + formulário), campos de e-mail e senha com ícones, toggle de visibilidade da senha, tratamento de erros via toast para credenciais inválidas, rate limit e erro de conexão, redirecionamento pós-login via `useNavigate` e integração com `authApi.login()`
+- `frontend/src/components/private-route.jsx`: criado componente de proteção de rotas — redireciona para `/login` se `access` token ausente no `localStorage`; envolve todas as rotas privadas no `App.jsx`
+- `frontend/src/App.jsx`: rotas `/`, `/clientes` e `/configuracoes` protegidas com `<PrivateRoute>`; adicionado `<Toaster richColors position="bottom-right" />` para notificações toast globais
+
+### Arquivos modificados
+- `apps/kanban/views.py`
+- `apps/usuarios/views.py`
+- `frontend/src/lib/api.js`
+- `frontend/src/pages/login.jsx`
+- `frontend/src/components/private-route.jsx`
+- `frontend/src/App.jsx`
+
+### Impacto
+- Segurança: rotas privadas bloqueadas no frontend sem token; resposta de erro de login padronizada evita leak de existência de usuário; tokens armazenados em `localStorage` e enviados via `Authorization: Bearer`
+- Performance: cliente HTTP centralizado elimina duplicação de headers e lógica de fetch em cada chamada
+
 ## [v1.9] — 2026-03-01
 
 ### Alterações

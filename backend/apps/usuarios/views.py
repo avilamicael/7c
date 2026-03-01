@@ -15,6 +15,19 @@ from apps.core.utils import get_empresa_do_admin
 class LoginView(TokenObtainPairView):
     throttle_classes = [LoginRateThrottle]
 
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        return response
+
+    def handle_exception(self, exc):
+        from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken
+        if isinstance(exc, (AuthenticationFailed, InvalidToken)):
+            return Response(
+                {'detail': 'E-mail ou senha inválidos.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        return super().handle_exception(exc)
+
 class AlterarSenhaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

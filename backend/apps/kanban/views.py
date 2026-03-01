@@ -4,7 +4,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
 
 from apps.core.utils import get_empresa_do_membro
-from apps.usuarios.permissions import IsAdminEmpresa, IsMembroEmpresa
+from apps.core.permissions import IsAdminEmpresa, IsMembroEmpresa
 from apps.kanban.models import KanbanBoard, KanbanColuna, KanbanCard
 from apps.kanban.serializers import (
     KanbanBoardSerializer,

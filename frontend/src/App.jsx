@@ -1,17 +1,24 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { RouteProgressBar } from "@/components/route-progress-bar"
+import PrivateRoute from "@/components/private-route"
+import Login from "@/pages/login"
 import Dashboard from "@/pages/dashboard"
 import Configuracoes from "@/pages/configuracoes"
-import Clientes from "@/pages/clientes"                                 // ← adicionar
+import Clientes from "@/pages/clientes"
+import { Toaster } from "sonner";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster richColors position="bottom-right" />
       <RouteProgressBar />
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/configuracoes" element={<Configuracoes />} />
-        <Route path="/clientes" element={<Clientes />} />               {/* ← adicionar */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/clientes" element={<PrivateRoute><Clientes /></PrivateRoute>} />
+        <Route path="/configuracoes" element={<PrivateRoute><Configuracoes /></PrivateRoute>} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

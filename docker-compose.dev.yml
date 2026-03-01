@@ -30,6 +30,9 @@ services:
     build: ./backend
     restart: always
     env_file: .env
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./backend:/app
       - ./data/logs/backend:/app/logs
@@ -40,8 +43,7 @@ services:
       redis:
         condition: service_healthy
     command: >
-      sh -c "python manage.py makemigrations &&
-             python manage.py migrate &&
+      sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              python manage.py runserver 0.0.0.0:8000"
     ports:
@@ -60,4 +62,42 @@ services:
       - "5173:5173"
     environment:
       - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
     restart: always
+
+  celery_worker:
+    build: ./backend
+    restart: always
+    env_file: .env
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    command: celery -A core worker --loglevel=debug --concurrency=2
+    volumes:
+      - ./backend:/app
+      - ./data/logs/backend:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build: ./backend
+    restart: always
+    env_file: .env
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    command: celery -A core beat --loglevel=debug --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/app
+      - ./data/logs/backend:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
