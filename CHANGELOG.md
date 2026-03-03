@@ -1,5 +1,32 @@
 # Changelog — Backend
 
+## [v2.1] — 2026-03-03
+
+### Alterações
+- Criação do módulo financeiro completo com abas "Contas a Pagar" e "Contas a Receber"
+- Implementação dos componentes `ContasPagarTab` e `ContasReceberTab` com filtros, tabela e KPIs
+- Implementação do `KPICards` com cards de Total Pendente, Total Vencido, Total Pago/Recebido no Mês e Total de Contas
+- Implementação dos modais `DetalhesContaPagarModal`, `DetalhesContaReceberModal`, `EditContaPagarModal` e `EditContaReceberModal`
+- Substituição do `index.css` para adotar o tema do projeto Next.js (paleta azul-slate oklch, radius 0.5rem)
+- Adição das fontes Inter e JetBrains Mono via Google Fonts no `index.html`
+- Ajustes de design: tab full-width com ícones `TrendingUp`/`TrendingDown`, filtros em linha, `DatePicker` nos campos de data, badges de status com cores suaves
+
+### Arquivos modificados
+- `src/pages/financeiro.jsx`
+- `src/components/financeiro/contas-pagar-tab.jsx`
+- `src/components/financeiro/contas-receber-tab.jsx`
+- `src/components/financeiro/kpi-cards.jsx`
+- `src/components/financeiro/detalhes-conta-pagar-modal.jsx`
+- `src/components/financeiro/detalhes-conta-receber-modal.jsx`
+- `src/components/financeiro/edit-conta-pagar-modal.jsx`
+- `src/components/financeiro/edit-conta-receber-modal.jsx`
+- `src/index.css`
+- `index.html`
+
+### Impacto
+- Segurança: Nenhuma alteração em autenticação ou permissões; todos os endpoints continuam protegidos via `authHeaders()`
+- Performance: Filtros aplicados client-side com `useMemo`; KPIs calculados a partir dos dados já carregados sem requisições adicionais
+
 ## [v2] — 2026-03-02
 
 ### Alterações
