@@ -1,5 +1,102 @@
 # Changelog — Backend
 
+## [v2] — 2026-03-02
+
+### Alterações
+- Conectada página `clientes.jsx` à API real, removendo mock data
+- `isAdmin` derivado de `usuario?.role` via `useAuth()` em vez de hardcoded
+- Adicionado refresh automático de token JWT em `api.js` — retenta request após renovar access token; redireciona para `/login` se refresh expirado
+- `useAuth.js` agora redireciona para `/login` ao falhar, limpando tokens do localStorage
+- `ClienteListSerializer` expandido com campos `cpf`, `telefone_principal`, `passaporte` e `data_nascimento` via `SerializerMethodField`
+- Adicionado `prefetch_related('documentos', 'telefones')` em `ListarClientesView` para evitar N+1
+- `ClienteSerializer` reescrito com suporte a escrita nested de `documentos` e `telefones` via `_sync_documentos` e `_sync_telefones`
+- `InativarClienteView` corrigido para alternar `ativo`/`inativo` em vez de só inativar
+- `dialog-editar.jsx` refatorado para buscar detalhe completo via `clientesApi.detalhar()` ao abrir, evitando tela branca por dados incompletos
+- `dialog-criar.jsx` conectado à API com loading state e tratamento de erro
+- `clientes-table.jsx` passou a gerenciar fetch internamente com `fetchClientes`, recarregando a lista após criar, editar ou inativar
+- `clientes-form-steps.jsx` corrigido: tipo `"emergencia"` substituído por `"outro"` para alinhar com choices do backend; adicionado `CNH` nos tipos de documento
+- `clientes-columns.jsx` atualizado para consumir `cpf` e `telefone_principal` direto do serializer em vez de `.find()` nos arrays
+
+### Arquivos modificados
+- `src/lib/api.js`
+- `src/hooks/useAuth.js`
+- `src/pages/clientes.jsx`
+- `src/components/clientes/clientes-table.jsx`
+- `src/components/clientes/clientes-columns.jsx`
+- `src/components/clientes/clientes-form-steps.jsx`
+- `src/components/clientes/dialog-criar.jsx`
+- `src/components/clientes/dialog-editar.jsx`
+- `apps/clientes/serializers.py`
+- `apps/clientes/views.py`
+
+### Impacto
+- Segurança: refresh automático evita sessões quebradas com token expirado; redirect para login ao invés de estado indefinido
+- Performance: `prefetch_related` elimina N+1 na listagem de clientes; fetch de detalhe sob demanda evita payload desnecessário na listagem
+
+## [v1.12] — 2026-03-01
+
+### Alterações
+- Adicionado proxy `/media` no `vite.config.js` para servir arquivos de mídia via Vite em desenvolvimento
+- Corrigido `get_avatar_url` no `UsuarioSerializer` para retornar path relativo (`obj.avatar.url`) em vez de URL absoluta com host interno do Docker
+- Corrigido `dashboard.jsx` e `clientes.jsx` para passar `usuario` e `empresa` ao `AppSidebar` via `useAuth()`
+- `isAdmin` em `clientes.jsx` agora derivado de `usuario?.role` em vez de hardcoded `true`
+- Adicionado `profile-header.jsx`: preview de avatar antes de salvar, botão "Atualizar foto" separado do seletor, display name "Administrador" para role `admin`, `membroDesde` via `date_joined`
+- Adicionado campos de endereço (`cep`, `endereco`, `cidade`, `uf`) no `PersonalTab` com busca automática via ViaCEP
+- Criado `src/lib/cep.api.js` com função `buscarCep()` reutilizável
+- Atualizado `apps/usuarios/admin.py` com fieldset "Endereço", `sobrenome` e `cidade` no `list_display`, filtro por `uf`
+
+### Arquivos modificados
+- `vite.config.js`
+- `apps/usuarios/serializers.py`
+- `src/pages/dashboard.jsx`
+- `src/pages/clientes.jsx`
+- `src/components/profile-page/profile-header.jsx`
+- `src/components/profile-page/profile-content.jsx` (`PersonalTab`)
+- `src/lib/cep.api.js`
+- `apps/usuarios/admin.py`
+
+### Impacto
+- Segurança: nenhuma alteração de superfície de ataque; avatar_url não expõe mais host interno
+- Performance: preview de avatar via `URL.createObjectURL` sem requisição extra ao servidor
+
+## [v1.11] — 2026-03-01
+
+### Alterações
+- `apps/usuarios/models.py`: adicionados campos `sobrenome`, `endereco`, `cidade`, `uf` e `avatar` (`ImageField` com upload para `avatars/%Y/%m/`); adicionado `cep` com validador `validar_cep`
+- `apps/usuarios/serializers.py`: criados `UsuarioSerializer` (com `role` e `avatar_url` via `SerializerMethodField`), `AtualizarPerfilSerializer`, `AvatarSerializer` (validação de formato e tamanho), `AlterarSenhaSerializer` (valida `senha_atual`, `nova_senha` e `confirmar_nova_senha` com `validate_password` do Django)
+- `apps/usuarios/views.py`: criadas `MeuPerfilView` (GET/PATCH), `AtualizarAvatarView` (PATCH multipart, deleta avatar anterior), `AlterarSenhaView` (POST com throttle), `CriarUsuarioView`, `ListarUsuariosView`, `DesativarUsuarioView`; `LoginView` com `handle_exception` retornando 401 padronizado
+- `apps/usuarios/urls.py`: rotas reescritas sem prefixo redundante — `login/`, `refresh/`, `logout/`, `me/`, `me/avatar/`, `me/senha/`, `criar/`, `<uuid>/desativar/`
+- `core/urls.py`: adicionado `path('api/usuarios/', include('apps.usuarios.urls'))` para expor endpoints de perfil; mantido `api/auth/` para login e refresh
+- `core/settings.py`: adicionados `MEDIA_URL = "/media/"` e `MEDIA_ROOT = DATA_DIR / "media"`
+- `src/lib/api.js`: `request()` detecta `FormData` automaticamente e omite `Content-Type` para não quebrar upload com boundary
+- `src/lib/usuarios.api.js`: adicionados métodos `meuPerfil()`, `atualizarPerfil()`, `atualizarAvatar()` e `alterarSenha()`; todos retornam JSON parseado e lançam erro em caso de resposta não-ok
+- `src/lib/empresas.api.js`: todos os métodos agora retornam `.json()` parseado em vez de `Response` bruta
+- `src/hooks/useAuth.js`: criado hook com `meuPerfil()` e `buscar()` em paralelo via `Promise.all`; expõe `usuario`, `empresa`, `loading` e `recarregar`
+- `src/components/app-sidebar.jsx`: recebe props `usuario` e `empresa`; nome e logo da empresa dinâmicos; `NavUser` alimentado com dados reais do usuário autenticado; arrays de navegação movidos para constantes fora do componente
+- `src/components/profile-page/profile-header.jsx`: exibe avatar real, iniciais dinâmicas, role, email, cidade+UF e membro desde; upload de avatar via `atualizarAvatar()`
+- `src/components/profile-page/profile-content.jsx`: aba Pessoal integrada com `atualizarPerfil()`; aba Conta exibe planos fictícios apenas para admin; aba Segurança com formulário de 3 campos integrado a `alterarSenha()`; 2FA e Notificações em modo readonly com badge "Em breve"
+- `src/pages/profile.jsx`: conectado ao `useAuth`; passa `usuario` e `empresa` para `AppSidebar`, `ProfileHeader` e `ProfileContent`
+
+### Arquivos modificados
+- `apps/usuarios/models.py`
+- `apps/usuarios/serializers.py`
+- `apps/usuarios/views.py`
+- `apps/usuarios/urls.py`
+- `core/urls.py`
+- `core/settings.py`
+- `src/lib/api.js`
+- `src/lib/usuarios.api.js`
+- `src/lib/empresas.api.js`
+- `src/hooks/useAuth.js`
+- `src/components/app-sidebar.jsx`
+- `src/components/profile-page/profile-header.jsx`
+- `src/components/profile-page/profile-content.jsx`
+- `src/pages/profile.jsx`
+
+### Impacto
+- Segurança: avatar servido via `MEDIA_URL` protegido por autenticação JWT; upload valida content-type e tamanho antes de salvar; avatar anterior deletado do disco ao substituir; `AlterarSenhaSerializer` valida senha atual antes de permitir troca; plano de assinatura exposto apenas para role admin
+- Performance: `Promise.all` no `useAuth` paraleliza as duas chamadas de perfil; arrays de navegação do sidebar são constantes estáticas (sem re-criação a cada render); `update_fields` mantido em todos os saves parciais
+
 ## [v1.10] — 2026-03-01
 
 ### Alterações

@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// ─── Step 1 — Dados Pessoais ──────────────────────────────────────────────────
 export function Step1({ form, onChange }) {
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -44,7 +43,6 @@ export function Step1({ form, onChange }) {
   );
 }
 
-// ─── Step 2 — Documentos ─────────────────────────────────────────────────────
 export function Step2({ form, onChange }) {
   const addDocumento = () =>
     onChange("documentos", [...form.documentos, { id: Date.now(), tipo: "outro", numero: "" }]);
@@ -99,6 +97,7 @@ export function Step2({ form, onChange }) {
                   <SelectContent>
                     <SelectItem value="cpf">CPF</SelectItem>
                     <SelectItem value="rg">RG</SelectItem>
+                    <SelectItem value="cnh">CNH</SelectItem>
                     <SelectItem value="outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
@@ -120,10 +119,9 @@ export function Step2({ form, onChange }) {
   );
 }
 
-// ─── Step 3 — Contato ─────────────────────────────────────────────────────────
 export function Step3({ form, onChange }) {
   const addTelefone = () =>
-    onChange("telefones", [...form.telefones, { id: Date.now(), tipo: "emergencia", nome: "", numero: "" }]);
+    onChange("telefones", [...form.telefones, { id: Date.now(), tipo: "outro", nome: "", numero: "" }]);
 
   const removeTelefone = (id) =>
     onChange("telefones", form.telefones.filter((t) => t.id !== id));
@@ -158,11 +156,11 @@ export function Step3({ form, onChange }) {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="proprio">Próprio</SelectItem>
-                    <SelectItem value="emergencia">Emergência</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              {tel.tipo === "emergencia" && (
+              {tel.tipo === "outro" && (
                 <div className="space-y-1.5 flex-1">
                   <Label>Nome do Contato</Label>
                   <Input value={tel.nome} onChange={(e) => updateTelefone(tel.id, "nome", e.target.value)} placeholder="Nome" />

@@ -11,25 +11,34 @@ export const clientesApi = {
       headers: authHeaders(),
     }),
 
-  criar: (data) =>
-    request("/clientes/criar/", {
+  criar: async (data) => {
+    const res = await request("/clientes/criar/", {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(data),
-    }),
+    });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 
-  editar: (uuid, data) =>
-    request(`/clientes/${uuid}/editar/`, {
+  editar: async (uuid, data) => {
+    const res = await request(`/clientes/${uuid}/editar/`, {
       method: "PATCH",
       headers: authHeaders(),
       body: JSON.stringify(data),
-    }),
+    });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 
-  inativar: (uuid) =>
-    request(`/clientes/${uuid}/inativar/`, {
+  inativar: async (uuid) => {
+    const res = await request(`/clientes/${uuid}/inativar/`, {
       method: "PATCH",
       headers: authHeaders(),
-    }),
+    });
+    if (!res.ok) throw await res.json();
+    return res.json();
+  },
 
   // Documentos
   listarDocumentos: (uuid) =>

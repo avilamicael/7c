@@ -1,12 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-const getCPF = (cliente) =>
-  cliente.documentos?.find((d) => d.tipo === "cpf")?.numero ?? "—";
-
-const getTelefonePrincipal = (cliente) =>
-  cliente.telefones?.find((t) => t.tipo === "proprio")?.numero ?? "—";
-
 const formatDate = (dateStr) => {
   if (!dateStr) return "—";
   const [year, month, day] = dateStr.split("-");
@@ -37,7 +31,7 @@ export const getClientesColumns = ({ onEditar }) => [
     header: "Contato",
     cell: ({ row }) => (
       <div className="text-sm">
-        <div>{getTelefonePrincipal(row.original)}</div>
+        <div>{row.original.telefone_principal ?? "—"}</div>
         <div className="text-muted-foreground">{row.original.email || "—"}</div>
       </div>
     ),
@@ -47,7 +41,7 @@ export const getClientesColumns = ({ onEditar }) => [
     header: "Documento",
     cell: ({ row }) => (
       <div className="text-sm">
-        <div>{getCPF(row.original)}</div>
+        <div>{row.original.cpf ?? "—"}</div>
         <div className="text-muted-foreground">
           {row.original.passaporte ? `🛂 ${row.original.passaporte}` : "—"}
         </div>

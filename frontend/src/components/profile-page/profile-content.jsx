@@ -11,6 +11,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { buscarCep } from "@/lib/cep.api";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -249,10 +250,21 @@ function PersonalizacaoSection() {
 
 // ─── Aba Pessoal ──────────────────────────────────────────────────────────────
 
+// Substitua apenas a função PersonalTab em profile-content.jsx
+
 function PersonalTab({ usuario, onAtualizar }) {
-  const [form, setForm] = useState({ nome: "", sobrenome: "", email: "", telefone: "" });
+  const [form, setForm] = useState({
+    nome: "",
+    sobrenome: "",
+    email: "",
+    telefone: "",
+    cep: "",
+    endereco: "",
+    cidade: "",
+    uf: "",
+  });
   const [salvando, setSalvando] = useState(false);
-  const isAdmin = usuario?.role === "admin";
+  const [buscandoCep, setBuscandoCep] = useState(false);
 
   useEffect(() => {
     if (usuario) {
@@ -261,9 +273,35 @@ function PersonalTab({ usuario, onAtualizar }) {
         sobrenome: usuario.sobrenome || "",
         email: usuario.email || "",
         telefone: usuario.telefone || "",
+        cep: usuario.cep || "",
+        endereco: usuario.endereco || "",
+        cidade: usuario.cidade || "",
+        uf: usuario.uf || "",
       });
     }
   }, [usuario]);
+
+  async function handleBuscarCep(cep) {
+    const soDigitos = cep.replace(/\D/g, "");
+    if (soDigitos.length !== 8) return;
+
+    setBuscandoCep(true);
+    try {
+      const dados = await buscarCep(soDigitos);
+
+      setForm((p) => ({
+        ...p,
+        cep: soDigitos,
+        endereco: dados.logradouro || p.endereco,
+        cidade: dados.cidade || p.cidade,
+        uf: dados.uf || p.uf,
+      }));
+    } catch {
+      toast.error("CEP não encontrado.");
+    } finally {
+      setBuscandoCep(false);
+    }
+  }
 
   async function handleSalvar() {
     setSalvando(true);
@@ -287,6 +325,7 @@ function PersonalTab({ usuario, onAtualizar }) {
           <CardDescription>Atualize seus dados pessoais e informações de perfil.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Dados básicos */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome</Label>
@@ -322,6 +361,70 @@ function PersonalTab({ usuario, onAtualizar }) {
               />
             </div>
           </div>
+
+          <Separator />
+
+          {/* Endereço */}
+          <div>
+            <h3 className="text-sm font-medium mb-4">Endereço</h3>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="cep">CEP</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="cep"
+                    value={form.cep}
+                    maxLength={8}
+                    placeholder="00000000"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setForm((p) => ({ ...p, cep: val }));
+                    }}
+                    onBlur={(e) => handleBuscarCep(e.target.value)} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={buscandoCep || form.cep.length !== 8}
+                    onClick={() => handleBuscarCep(form.cep)}
+                  >
+                    {buscandoCep ? "Buscando..." : "Buscar"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endereco">Logradouro</Label>
+                <Input
+                  id="endereco"
+                  value={form.endereco}
+                  onChange={(e) => setForm((p) => ({ ...p, endereco: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cidade">Cidade</Label>
+                <Input
+                  id="cidade"
+                  value={form.cidade}
+                  onChange={(e) => setForm((p) => ({ ...p, cidade: e.target.value }))}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="uf">UF</Label>
+                <Input
+                  id="uf"
+                  value={form.uf}
+                  maxLength={2}
+                  className="uppercase"
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, uf: e.target.value.toUpperCase() }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end">
             <Button onClick={handleSalvar} disabled={salvando} className="gap-2">
               <IconDeviceFloppy className="h-4 w-4" />
@@ -331,11 +434,10 @@ function PersonalTab({ usuario, onAtualizar }) {
         </CardContent>
       </Card>
 
-      {isAdmin && <PersonalizacaoSection />}
+      {usuario?.role === "admin" && <PersonalizacaoSection />}
     </div>
   );
 }
-
 // ─── Aba Conta ────────────────────────────────────────────────────────────────
 
 function AccountTab({ usuario }) {
@@ -396,7 +498,7 @@ function SecurityTab() {
   async function handleAlterarSenha() {
     setSalvando(true);
     try {
-      await usuarioApi.alterarSenha(form);
+      await usuariosApi.alterarSenha(form);
       toast.success("Senha alterada com sucesso.");
       setForm({ senha_atual: "", nova_senha: "", confirmar_nova_senha: "" });
     } catch (err) {

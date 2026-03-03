@@ -1,3 +1,15 @@
+# PENDENCIAS
+
+- Ajustar as mascaras, limites de caracteres nos campos frontend, validar dados com o backend e retorno de erro p frontedn mostrar p usuario.
+
+- Mesmo cpf para dois clientes
+
+-verificar formas de manter dados comuns no navegador/sessao
+
+- Telefone e documento de cliente estao usando id, seria interessante colocar o public_id tb?
+
+- atualiza foto qnd usuario trocar no perfil
+
 # Checklist — Kanban + Tarefas
 
 ## ✅ Etapa 1 — Infraestrutura WebSocket

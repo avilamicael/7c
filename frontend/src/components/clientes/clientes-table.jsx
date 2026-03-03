@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -21,13 +21,33 @@ import { ClientesCards } from "./clientes-cards";
 import { DialogCriar } from "./dialog-criar";
 import { DialogEditar } from "./dialog-editar";
 import { getClientesColumns } from "./clientes-columns";
+import { clientesApi } from "@/lib/clientes.api";
+import { toast } from "sonner";
 
-export function ClientesTable({ clientes: initialClientes, isAdmin = false }) {
-  const [clientes, setClientes] = useState(initialClientes);
+export function ClientesTable({ isAdmin = false }) {
+  const [clientes, setClientes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState([]);
   const [dialogCriar, setDialogCriar] = useState(false);
   const [clienteEditando, setClienteEditando] = useState(null);
+
+  const fetchClientes = useCallback(async () => {
+    try {
+      const res = await clientesApi.listar();
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setClientes(data);
+    } catch {
+      toast.error("Erro ao carregar clientes.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchClientes();
+  }, [fetchClientes]);
 
   const columns = useMemo(
     () => getClientesColumns({ onEditar: setClienteEditando }),
@@ -49,26 +69,10 @@ export function ClientesTable({ clientes: initialClientes, isAdmin = false }) {
 
   const totalFiltrado = table.getFilteredRowModel().rows.length;
 
-  const handleCreate = (novoCliente) => {
-    setClientes((prev) => [...prev, novoCliente]);
-  };
-
-  const handleSave = (clienteAtualizado) => {
-    setClientes((prev) =>
-      prev.map((c) => (c.id === clienteAtualizado.id ? clienteAtualizado : c))
-    );
-  };
-
-  const handleDelete = (id) => {
-    setClientes((prev) => prev.filter((c) => c.id !== id));
-  };
-
   return (
     <div className="space-y-4">
-      {/* Cards */}
       <ClientesCards clientes={clientes} totalFiltrado={totalFiltrado} />
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <Input
           placeholder="Buscar por nome, email, documento..."
@@ -79,7 +83,6 @@ export function ClientesTable({ clientes: initialClientes, isAdmin = false }) {
         <Button onClick={() => setDialogCriar(true)}>+ Novo Cliente</Button>
       </div>
 
-      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -92,18 +95,20 @@ export function ClientesTable({ clientes: initialClientes, isAdmin = false }) {
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
-                    {header.column.getIsSorted() === "asc"
-                      ? " ↑"
-                      : header.column.getIsSorted() === "desc"
-                      ? " ↓"
-                      : ""}
+                    {header.column.getIsSorted() === "asc" ? " ↑" : header.column.getIsSorted() === "desc" ? " ↓" : ""}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
+                  Carregando...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
@@ -115,10 +120,7 @@ export function ClientesTable({ clientes: initialClientes, isAdmin = false }) {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
                   Nenhum cliente encontrado.
                 </TableCell>
               </TableRow>
@@ -127,43 +129,32 @@ export function ClientesTable({ clientes: initialClientes, isAdmin = false }) {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">
           Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
         </span>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
+          <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
             Anterior
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
             Próxima
           </Button>
         </div>
       </div>
 
-      {/* Dialogs */}
       <DialogCriar
         open={dialogCriar}
         onClose={() => setDialogCriar(false)}
-        onCreate={handleCreate}
+        onCreate={fetchClientes}
       />
+
       <DialogEditar
         open={!!clienteEditando}
         onClose={() => setClienteEditando(null)}
         cliente={clienteEditando}
-        onSave={handleSave}
-        onDelete={handleDelete}
+        onSave={fetchClientes}
+        onDelete={fetchClientes}
         isAdmin={isAdmin}
       />
     </div>

@@ -11,6 +11,7 @@ import {
   IconPlane,
 } from "@tabler/icons-react"
 
+import { useAuth } from "@/hooks/useAuth"
 import { Separator } from "@/components/ui/separator"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -36,7 +37,7 @@ const navCrm = [
   { title: "Dashboard", url: "#", icon: IconDashboard },
   { title: "Kanban", url: "#", icon: IconLayoutKanban },
   { title: "Clientes", url: "/clientes", icon: IconUsers },
-  { title: "Financeiro", url: "#", icon: IconCash },
+  { title: "Financeiro", url: "/financeiro", icon: IconCash },
   { title: "Tarefas", url: "#", icon: IconChecklist },
 ]
 
@@ -45,7 +46,8 @@ const navSecondary = [
   { title: "Procurar", url: "#", icon: IconSearch },
 ]
 
-export function AppSidebar({ usuario, empresa, ...props }) {
+export function AppSidebar({ ...props }) {
+  const { usuario, empresa } = useAuth()
   const logoSrc = empresa?.personalizacao?.logo || DEFAULT_LOGO
   const nomeEmpresa = empresa?.nome_fantasia || "7C Turismo & Consultoria"
 

@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { StepIndicator } from "./step-indicator";
 import { Step1, Step2, Step3 } from "./clientes-form-steps";
+import { clientesApi } from "@/lib/clientes.api";
+import { toast } from "sonner";
 
 const STEPS = ["Dados Pessoais", "Documentos", "Contato"];
 
@@ -32,6 +34,7 @@ const emptyCliente = {
 export function DialogCriar({ open, onClose, onCreate }) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(emptyCliente);
+  const [salvando, setSalvando] = useState(false);
 
   const handleChange = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -42,14 +45,32 @@ export function DialogCriar({ open, onClose, onCreate }) {
     onClose();
   };
 
-  const handleSave = () => {
-    onCreate({
-      ...form,
-      id: String(Date.now()),
-      public_id: crypto.randomUUID(),
-      data_cadastro: new Date().toISOString(),
-    });
-    handleClose();
+  const handleSave = async () => {
+    setSalvando(true);
+    try {
+      const novo = await clientesApi.criar({
+        nome: form.nome,
+        sobrenome: form.sobrenome,
+        data_nascimento: form.data_nascimento || null,
+        nacionalidade: form.nacionalidade,
+        passaporte: form.passaporte,
+        passaporte_emissao: form.passaporte_emissao || null,
+        passaporte_expiracao: form.passaporte_expiracao || null,
+        passaporte_pais: form.passaporte_pais,
+        email: form.email,
+        rede_social: form.rede_social,
+        observacoes: form.observacoes,
+        documentos: form.documentos,
+        telefones: form.telefones,
+      });
+      onCreate(novo);
+      handleClose();
+      toast.success("Cliente cadastrado com sucesso.");
+    } catch (err) {
+      toast.error(err?.detail ?? "Erro ao cadastrar cliente.");
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
@@ -71,13 +92,15 @@ export function DialogCriar({ open, onClose, onCreate }) {
           <Button
             variant="outline"
             onClick={() => (step === 0 ? handleClose() : setStep(step - 1))}
+            disabled={salvando}
           >
             {step === 0 ? "Cancelar" : "Voltar"}
           </Button>
           <Button
-            onClick={() => (step < STEPS.length - 1 ? setStep(step + 1) : handleSave())}
+            onClick={() => step < STEPS.length - 1 ? setStep(step + 1) : handleSave()}
+            disabled={salvando}
           >
-            {step < STEPS.length - 1 ? "Próximo" : "Salvar"}
+            {step < STEPS.length - 1 ? "Próximo" : salvando ? "Salvando..." : "Salvar"}
           </Button>
         </DialogFooter>
       </DialogContent>

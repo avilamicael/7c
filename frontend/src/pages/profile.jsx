@@ -6,11 +6,11 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Page() {
-  const { usuario, empresa, loading, recarregar } = useAuth();
+  const { usuario, loading, recarregar } = useAuth();
 
   return (
     <SidebarProvider>
-      <AppSidebar variant="inset" usuario={usuario} empresa={empresa} />
+      <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title="Perfil" />
         <div className="flex flex-1 flex-col p-6">

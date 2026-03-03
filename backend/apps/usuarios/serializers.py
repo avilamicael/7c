@@ -32,10 +32,8 @@ class UsuarioSerializer(NormalizarTextoMixin, serializers.ModelSerializer):
     def get_avatar_url(self, obj):
         if not obj.avatar:
             return None
-        request = self.context.get("request")
-        if request:
-            return request.build_absolute_uri(obj.avatar.url)
-        return obj.avatar.url
+        # Retorna path relativo — o proxy do Vite (dev) ou nginx (prod) serve /media/
+        return obj.avatar.url   
 
 
 class AtualizarPerfilSerializer(NormalizarTextoMixin, serializers.ModelSerializer):

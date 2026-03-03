@@ -15,8 +15,12 @@ class ListarClientesView(generics.ListAPIView):
 
     def get_queryset(self):
         empresa = get_empresa_do_membro(self.request.user)
-        return Cliente.objects.filter(empresa=empresa).order_by('nome', 'sobrenome')
-
+        return (
+            Cliente.objects
+            .filter(empresa=empresa)
+            .prefetch_related('documentos', 'telefones')
+            .order_by('nome', 'sobrenome')
+        )
 
 class CriarClienteView(generics.CreateAPIView):
     serializer_class   = ClienteSerializer
@@ -49,7 +53,11 @@ class EditarClienteView(generics.UpdateAPIView):
 
     def get_queryset(self):
         empresa = get_empresa_do_membro(self.request.user)
-        return Cliente.objects.filter(empresa=empresa)
+        return (
+            Cliente.objects
+            .filter(empresa=empresa)
+            .prefetch_related('documentos', 'telefones')
+        )
 
     def perform_update(self, serializer):
         serializer.save(atualizado_por=self.request.user)
@@ -65,13 +73,9 @@ class InativarClienteView(APIView):
         if not cliente:
             return Response({'detail': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if not cliente.ativo:
-            return Response({'detail': 'Cliente já está inativo.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        cliente.ativo = False
+        cliente.ativo = not cliente.ativo
         cliente.save(update_fields=['ativo'])
-        return Response({'detail': 'Cliente inativado com sucesso.'})
-
+        return Response({'ativo': cliente.ativo})
 
 class ClienteDocumentoView(generics.ListCreateAPIView):
     serializer_class   = ClienteDocumentoSerializer
