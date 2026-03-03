@@ -1,5 +1,38 @@
 # Changelog — Backend
 
+## [v2.2.0] — 2026-03-03
+
+### Alterações
+- Adicionado modal de nova conta a pagar com tabs **Manual | Recorrência**, largura aumentada para `max-w-5xl`, data de competência preenchida automaticamente com a data atual e campo de desconto removido do cadastro
+- Implementado modo de recorrência com tipos diária, semanal, quinzenal, mensal, bimestral, trimestral, semestral e anual, com pré-visualização em tempo real das parcelas geradas
+- Corrigido layout dos selects no modal para ocupar largura total (`w-full`)
+- Criado `src/lib/financeiro.api.js` com funções para `contasPagarApi`, `parcelasPagarApi`, `contasReceberApi`, `parcelasReceberApi`, `categoriasApi` e `contasBancariasApi`
+- Criado `src/lib/fornecedores.api.js` com funções para `fornecedoresApi`
+- Corrigido `apps/fornecedores/urls.py`: `router.register("fornecedores", ...)` alterado para `router.register("", ...)` eliminando a rota duplicada `/api/fornecedores/fornecedores/`
+- Criada página `src/pages/configuracoes.jsx` com layout de nav lateral fixo à esquerda e conteúdo ocupando todo o espaço restante
+- Criados componentes `categorias-section.jsx`, `contas-bancarias-section.jsx`, `link-captacao-section.jsx` e `personalizacao-section.jsx` em `src/components/configuracoes/`
+- Adicionada rota `/configuracoes` no `src/App.jsx`
+- Adicionado link "Configurações" no `NavSecondary` do `src/components/app-sidebar.jsx`
+- Removidas `PersonalizacaoSection` e Link de Captação do `profile-content.jsx`, concentrando essas configurações na página de Configurações
+
+### Arquivos modificados
+- `src/components/financeiro/edit-conta-pagar-modal.jsx`
+- `src/lib/financeiro.api.js` *(novo)*
+- `src/lib/fornecedores.api.js` *(novo)*
+- `apps/fornecedores/urls.py`
+- `src/pages/configuracoes.jsx` *(novo)*
+- `src/components/configuracoes/categorias-section.jsx` *(novo)*
+- `src/components/configuracoes/contas-bancarias-section.jsx` *(novo)*
+- `src/components/configuracoes/link-captacao-section.jsx` *(novo)*
+- `src/components/configuracoes/personalizacao-section.jsx` *(novo)*
+- `src/App.jsx`
+- `src/components/app-sidebar.jsx`
+- `src/components/profile-page/profile-content.jsx`
+
+### Impacto
+- Segurança: URLs de fornecedores corrigidas eliminam exposição de rotas duplicadas; nenhum dado sensível exposto
+- Performance: `handle()` normaliza arrays evitando erros de `.map()` em respostas paginadas; modal de recorrência calcula parcelas localmente sem chamadas extras à API
+
 ## [v2.1] — 2026-03-03
 
 ### Alterações
