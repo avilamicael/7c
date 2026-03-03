@@ -9,6 +9,7 @@ import {
   IconCash,
   IconChecklist,
   IconPlane,
+  IconSettings,
 } from "@tabler/icons-react"
 
 import { useAuth } from "@/hooks/useAuth"
@@ -29,26 +30,27 @@ import {
 const DEFAULT_LOGO = "/logoAuth.png"
 
 const navMain = [
-  { title: "Aéreo", url: "/", icon: IconPlane },
+  { title: "Aéreo",   url: "/", icon: IconPlane },
   { title: "Cotação", url: "/", icon: IconDashboard },
 ]
 
 const navCrm = [
-  { title: "Dashboard", url: "#", icon: IconDashboard },
-  { title: "Kanban", url: "#", icon: IconLayoutKanban },
-  { title: "Clientes", url: "/clientes", icon: IconUsers },
+  { title: "Dashboard",  url: "#",           icon: IconDashboard },
+  { title: "Kanban",     url: "#",           icon: IconLayoutKanban },
+  { title: "Clientes",   url: "/clientes",   icon: IconUsers },
   { title: "Financeiro", url: "/financeiro", icon: IconCash },
-  { title: "Tarefas", url: "#", icon: IconChecklist },
+  { title: "Tarefas",    url: "#",           icon: IconChecklist },
 ]
 
 const navSecondary = [
-  { title: "Ajuda", url: "#", icon: IconHelp },
-  { title: "Procurar", url: "#", icon: IconSearch },
+  { title: "Configurações", url: "/configuracoes", icon: IconSettings },
+  { title: "Ajuda",         url: "#",              icon: IconHelp },
+  { title: "Procurar",      url: "#",              icon: IconSearch },
 ]
 
 export function AppSidebar({ ...props }) {
   const { usuario, empresa } = useAuth()
-  const logoSrc = empresa?.personalizacao?.logo || DEFAULT_LOGO
+  const logoSrc    = empresa?.personalizacao?.logo || DEFAULT_LOGO
   const nomeEmpresa = empresa?.nome_fantasia || "7C Turismo & Consultoria"
 
   return (
@@ -77,8 +79,8 @@ export function AppSidebar({ ...props }) {
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={{
-          name: usuario?.nome || "...",
-          email: usuario?.email || "...",
+          name:   usuario?.nome      || "...",
+          email:  usuario?.email     || "...",
           avatar: usuario?.avatar_url || null,
         }} />
       </SidebarFooter>
