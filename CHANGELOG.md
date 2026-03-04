@@ -1,5 +1,29 @@
 # Changelog — Backend
 
+---
+
+## [v2.3.0] — 2026-03-04
+
+### Alterações
+- Redesenho completo dos modais de fornecedores (criar/editar) seguindo padrão visual dos modais de clientes
+- Removidas tabs e ScrollArea separado; substituídos por scroll único no `DialogContent`
+- Layout migrado para grid de 2 colunas (`grid-cols-2 gap-4`) em todos os campos
+- Seções separadas por `border-b pb-1` com espaçamento `space-y-6 py-2`
+- Campos CNPJ/CPF e Tipo tornam-se inputs desabilitados (`bg-muted`) no modal de edição
+- Integração CEP via ViaCEP mantida (onBlur + botão Buscar)
+- Componentização mantida em 4 arquivos com separação de responsabilidades
+
+### Arquivos modificados
+- `src/components/configuracoes/fornecedores/fornecedor-form-fields.jsx`
+- `src/components/configuracoes/fornecedores/criar-fornecedor-dialog.jsx`
+- `src/components/configuracoes/fornecedores/editar-fornecedor-dialog.jsx`
+
+### Impacto
+- Segurança: Sem alterações — validações e permissões mantidas
+- Performance: Remoção de tabs elimina renderização condicional de painéis; sem ScrollArea aninhado reduz overhead de layout
+
+---
+
 ## [v2.2.0] — 2026-03-03
 
 ### Alterações

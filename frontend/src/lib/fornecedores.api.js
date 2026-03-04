@@ -3,7 +3,8 @@ import { request, authHeaders } from "./api";
 const h = () => authHeaders();
 const json = () => ({ ...h(), "Content-Type": "application/json" });
 
-async function handle(res) {
+async function handle(promiseOrRes) {
+  const res = await promiseOrRes;
   if (!res.ok) throw await res.json();
   const data = await res.json();
   return Array.isArray(data) ? data : (data?.results ?? data);

@@ -42,4 +42,17 @@ class FornecedorSerializer(serializers.ModelSerializer):
             if not validar_cpf(cpf):
                 raise serializers.ValidationError({"cpf": "CPF inválido."})
 
+        # ── Validação de unicidade por empresa ──────────────────────────
+        empresa = self.context["request"].user.empresa_vinculo.empresa
+        instance_pk = self.instance.pk if self.instance else None
+
+        if tipo == Fornecedor.TipoPessoa.JURIDICA:
+            cnpj = attrs.get("cnpj", "")
+            if cnpj and Fornecedor.objects.filter(empresa=empresa, cnpj=cnpj).exclude(pk=instance_pk).exists():
+                raise serializers.ValidationError({"cnpj": "Já existe um fornecedor com este CNPJ."})
+        else:
+            cpf = attrs.get("cpf", "")
+            if cpf and Fornecedor.objects.filter(empresa=empresa, cpf=cpf).exclude(pk=instance_pk).exists():
+                raise serializers.ValidationError({"cpf": "Já existe um fornecedor com este CPF."})
+
         return attrs
