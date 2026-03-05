@@ -23,14 +23,14 @@ const FORMAS_PGTO = [
 ];
 
 const RECORRENCIAS = [
-  { value: "diaria",    label: "Diária" },
-  { value: "semanal",  label: "Semanal" },
-  { value: "quinzenal",label: "Quinzenal" },
-  { value: "mensal",   label: "Mensal" },
-  { value: "bimestral",label: "Bimestral" },
-  { value: "trimestral",label: "Trimestral" },
-  { value: "semestral",label: "Semestral" },
-  { value: "anual",    label: "Anual" },
+  { value: "diaria", label: "Diária" },
+  { value: "semanal", label: "Semanal" },
+  { value: "quinzenal", label: "Quinzenal" },
+  { value: "mensal", label: "Mensal" },
+  { value: "bimestral", label: "Bimestral" },
+  { value: "trimestral", label: "Trimestral" },
+  { value: "semestral", label: "Semestral" },
+  { value: "anual", label: "Anual" },
 ];
 
 const DIAS_RECORRENCIA = {
@@ -55,11 +55,11 @@ function addMeses(isoDate, meses) {
 }
 
 function calcProximaData(base, tipo, index) {
-  if (tipo === "mensal")    return addMeses(base, index);
+  if (tipo === "mensal") return addMeses(base, index);
   if (tipo === "bimestral") return addMeses(base, index * 2);
-  if (tipo === "trimestral")return addMeses(base, index * 3);
+  if (tipo === "trimestral") return addMeses(base, index * 3);
   if (tipo === "semestral") return addMeses(base, index * 6);
-  if (tipo === "anual")     return addMeses(base, index * 12);
+  if (tipo === "anual") return addMeses(base, index * 12);
   return addDias(base, DIAS_RECORRENCIA[tipo] * index);
 }
 
@@ -68,8 +68,8 @@ function newParcela(id, dataVenc = "") {
 }
 
 const MODO_TABS = [
-  { id: "manual",     label: "Manual",     icon: ClipboardList },
-  { id: "recorrencia",label: "Recorrência",icon: RefreshCw },
+  { id: "manual", label: "Manual", icon: ClipboardList },
+  { id: "recorrencia", label: "Recorrência", icon: RefreshCw },
 ];
 
 // ─── Campos base compartilhados ────────────────────────────────────────────────
@@ -84,7 +84,7 @@ function CamposBase({ fornecedores, categorias, state, set }) {
             <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o fornecedor..." /></SelectTrigger>
             <SelectContent>
               {fornecedores.map((f) => (
-                <SelectItem key={f.id} value={String(f.id)}>
+                <SelectItem key={f.public_id} value={f.public_id}>
                   {f.nome_fantasia || f.razao_social}
                 </SelectItem>
               ))}
@@ -98,7 +98,9 @@ function CamposBase({ fornecedores, categorias, state, set }) {
             <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
             <SelectContent>
               {categorias.map((c) => (
-                <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
+                <SelectItem key={c.public_id} value={c.public_id}>
+                  {c.nome}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -344,9 +346,9 @@ export function EditContaPagarModal({ conta, onClose, onSuccess, isNew = false, 
   const isOpen = externalOpen !== undefined ? externalOpen : !!conta;
 
   const [fornecedores, setFornecedores] = useState([]);
-  const [categorias, setCategorias]     = useState([]);
-  const [loading, setLoading]           = useState(false);
-  const [modo, setModo]                 = useState("manual");
+  const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [modo, setModo] = useState("manual");
 
   const [base, setBase] = useState({
     fornecedor: "", categoria: "", numeroDoc: "", formaPgto: "",
@@ -355,7 +357,7 @@ export function EditContaPagarModal({ conta, onClose, onSuccess, isNew = false, 
 
   const setBaseField = useCallback((field, value) => setBase((p) => ({ ...p, [field]: value })), []);
 
-  const [parcelas, setParcelas]       = useState([newParcela(0)]);
+  const [parcelas, setParcelas] = useState([newParcela(0)]);
   const [notasFiscais, setNotasFiscais] = useState([]);
   const [rec, setRec] = useState({
     tipo: "", quantidade: "", valorBruto: "", primeiroVenc: "",
@@ -364,25 +366,25 @@ export function EditContaPagarModal({ conta, onClose, onSuccess, isNew = false, 
   useEffect(() => {
     if (!isOpen) return;
 
-    fornecedoresApi.listar().then(setFornecedores).catch(() => {});
-    categoriasApi.listar().then(setCategorias).catch(() => {});
+    fornecedoresApi.listar().then(setFornecedores).catch(() => { });
+    categoriasApi.listar().then(setCategorias).catch(() => { });
 
     if (conta) {
       setBase({
-        fornecedor:      String(conta.fornecedor ?? ""),
-        categoria:       String(conta.categoria ?? ""),
-        numeroDoc:       conta.numero_documento ?? "",
-        formaPgto:       conta.forma_pagamento ?? "",
+        fornecedor: conta.fornecedor_public_id ?? "",
+        categoria: conta.categoria_public_id ?? "",
+        numeroDoc: conta.numero_documento ?? "",
+        formaPgto: conta.forma_pagamento ?? "",
         dataCompetencia: conta.data_competencia ?? "",
-        descricao:       conta.descricao ?? "",
+        descricao: conta.descricao ?? "",
       });
       setParcelas(
         (conta.parcelas ?? []).map((p, i) => ({
           _id: i,
           data_vencimento: p.data_vencimento ?? "",
-          valor_bruto:     p.valor_bruto ?? "",
-          cod_barras:      p.cod_barras ?? "",
-          observacoes:     p.observacoes ?? "",
+          valor_bruto: p.valor_bruto ?? "",
+          cod_barras: p.cod_barras ?? "",
+          observacoes: p.observacoes ?? "",
         }))
       );
       setNotasFiscais(
@@ -404,12 +406,12 @@ export function EditContaPagarModal({ conta, onClose, onSuccess, isNew = false, 
   function buildParcelasFromRec() {
     const n = parseInt(rec.quantidade) || 0;
     return Array.from({ length: n }, (_, i) => ({
-      numero_parcela:  i + 1,
+      numero_parcela: i + 1,
       data_vencimento: calcProximaData(rec.primeiroVenc, rec.tipo, i),
-      valor_bruto:     parseFloat(rec.valorBruto) || 0,
-      desconto:        0,
-      cod_barras:      "",
-      observacoes:     "",
+      valor_bruto: parseFloat(rec.valorBruto) || 0,
+      desconto: 0,
+      cod_barras: "",
+      observacoes: "",
     }));
   }
 
@@ -417,40 +419,40 @@ export function EditContaPagarModal({ conta, onClose, onSuccess, isNew = false, 
     const parcelasPayload = modo === "recorrencia"
       ? buildParcelasFromRec()
       : parcelas.map((p, i) => ({
-          numero_parcela:  i + 1,
-          data_vencimento: p.data_vencimento,
-          valor_bruto:     parseFloat(p.valor_bruto) || 0,
-          desconto:        0,
-          cod_barras:      p.cod_barras,
-          observacoes:     p.observacoes,
-        }));
+        numero_parcela: i + 1,
+        data_vencimento: p.data_vencimento,
+        valor_bruto: parseFloat(p.valor_bruto) || 0,
+        desconto: 0,
+        cod_barras: p.cod_barras,
+        observacoes: p.observacoes,
+      }));
 
     setLoading(true);
     const body = {
-      fornecedor:       parseInt(base.fornecedor),
-      categoria:        base.categoria ? parseInt(base.categoria) : null,
+      fornecedor: base.fornecedor || null,
+      categoria: base.categoria || null,
       numero_documento: base.numeroDoc,
-      forma_pagamento:  base.formaPgto,
+      forma_pagamento: base.formaPgto,
       data_competencia: base.dataCompetencia,
-      descricao:        base.descricao,
-      total_parcelas:   parcelasPayload.length,
-      notas_fiscais:    notasFiscais.map(({ numero, serie }) => ({ numero, serie })),
-      parcelas:         parcelasPayload,
+      descricao: base.descricao,
+      total_parcelas: parcelasPayload.length,
+      notas_fiscais: notasFiscais.map(({ numero, serie }) => ({ numero, serie })),
+      parcelas: parcelasPayload,
     };
 
     const apiCall = isNew ? contasPagarApi.criar(body) : contasPagarApi.editar(conta.public_id, body);
     apiCall
       .then(() => { onSuccess?.(); onClose(); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }
 
-  const addParcela    = () => setParcelas((p) => [...p, newParcela(p.length)]);
+  const addParcela = () => setParcelas((p) => [...p, newParcela(p.length)]);
   const removeParcela = (id) => setParcelas((p) => p.filter((x) => x._id !== id));
   const updateParcela = (id, field, value) =>
     setParcelas((p) => p.map((x) => x._id === id ? { ...x, [field]: value } : x));
 
-  const addNF    = () => setNotasFiscais((p) => [...p, { _id: p.length, numero: "", serie: "" }]);
+  const addNF = () => setNotasFiscais((p) => [...p, { _id: p.length, numero: "", serie: "" }]);
   const removeNF = (id) => setNotasFiscais((p) => p.filter((x) => x._id !== id));
   const updateNF = (id, field, value) =>
     setNotasFiscais((p) => p.map((x) => x._id === id ? { ...x, [field]: value } : x));

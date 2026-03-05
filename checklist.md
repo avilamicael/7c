@@ -10,6 +10,10 @@
 
 - atualiza foto qnd usuario trocar no perfil
 
+- COLOCAR MAIS P FRENTE SISTEMA DE NOTA FISCAL
+
+- CRIAR MODELO CORE/DOCUMENTOS P GUARDAR DOCUMENTOS 
+
 # Checklist — Kanban + Tarefas
 
 ## ✅ Etapa 1 — Infraestrutura WebSocket

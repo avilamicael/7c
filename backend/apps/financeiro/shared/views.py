@@ -10,6 +10,7 @@ from .serializers import CategoriaSerializer, ContaBancariaSerializer
 class EmpresaScopedViewSet(viewsets.ModelViewSet):
     """Mixin base que resolve empresa uma única vez por request."""
     permission_classes = [IsAuthenticated]
+    lookup_field = "public_id"
 
     def get_empresa(self):
         if not hasattr(self, "_empresa"):

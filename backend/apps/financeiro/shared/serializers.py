@@ -10,8 +10,8 @@ from .models import Categoria, ContaBancaria
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Categoria
-        fields = ["id", "nome", "descricao", "ativo"]
-        read_only_fields = ["id"]
+        fields = ["public_id", "nome", "descricao", "ativo"]
+        read_only_fields = ["public_id"]
 
 
 class ContaBancariaSerializer(serializers.ModelSerializer):
@@ -19,8 +19,8 @@ class ContaBancariaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = ContaBancaria
-        fields = ["id", "banco_nome", "agencia", "conta", "tipo", "tipo_display", "descricao", "ativo"]
-        read_only_fields = ["id"]
+        fields = ["public_id", "banco_nome", "agencia", "conta", "tipo", "tipo_display", "descricao", "ativo"]
+        read_only_fields = ["public_id"]
 
 
 class RegistrarMovimentoBaseSerializer(serializers.Serializer):
@@ -60,7 +60,7 @@ class RegistrarMovimentoBaseSerializer(serializers.Serializer):
         parcela.multa             = data["multa"]
         parcela.outros_acrescimos = data["outros_acrescimos"]
         parcela.desconto          = data["desconto"]
-        parcela.conta_bancaria    = data["conta_bancaria_id"]
+        parcela.conta_bancaria_id = data["conta_bancaria_id"]
         parcela.observacoes       = data.get("observacoes", "")
 
 

@@ -4,7 +4,21 @@ from decimal import Decimal
 from rest_framework import serializers
 from apps.core.utils import get_empresa_do_membro
 from apps.financeiro.shared.serializers import RegistrarMovimentoBaseSerializer, BaixaBaseSerializer
+from apps.financeiro.shared.models import Categoria
+from apps.fornecedores.models import Fornecedor
 from .models import ContaPagar, NotaFiscalCP, ParcelaContaPagar, BaixaContaPagar
+
+
+class EmpresaSlugRelatedField(serializers.SlugRelatedField):
+    """
+    SlugRelatedField que restringe o queryset à empresa do usuário autenticado.
+    Impede referências cruzadas entre empresas sem expor PKs internos.
+    """
+
+    def get_queryset(self):
+        request = self.context.get("request")
+        empresa = get_empresa_do_membro(request.user)
+        return self.queryset.filter(empresa=empresa)
 
 
 class NotaFiscalCPSerializer(serializers.ModelSerializer):
@@ -54,6 +68,16 @@ class RegistrarPagamentoSerializer(RegistrarMovimentoBaseSerializer):
 class ContaPagarWriteSerializer(serializers.ModelSerializer):
     notas_fiscais = NotaFiscalCPSerializer(many=True, required=False)
     parcelas      = ParcelaContaPagarSerializer(many=True)
+    fornecedor    = EmpresaSlugRelatedField(
+        slug_field="public_id",
+        queryset=Fornecedor.objects.all(),
+    )
+    categoria     = EmpresaSlugRelatedField(
+        slug_field="public_id",
+        queryset=Categoria.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model  = ContaPagar
@@ -71,15 +95,7 @@ class ContaPagarWriteSerializer(serializers.ModelSerializer):
         for i, p in enumerate(parcelas, start=1):
             if p.get("numero_parcela") != i:
                 raise serializers.ValidationError({"parcelas": f"Parcela {i}: numero_parcela deve ser {i}."})
-
-        empresa    = get_empresa_do_membro(self.context["request"].user)
-        fornecedor = attrs.get("fornecedor")
-        if fornecedor and fornecedor.empresa_id != empresa.pk:
-            raise serializers.ValidationError({"fornecedor": "Fornecedor não pertence à sua empresa."})
-        categoria = attrs.get("categoria")
-        if categoria and categoria.empresa_id != empresa.pk:
-            raise serializers.ValidationError({"categoria": "Categoria não pertence à sua empresa."})
-
+        # Validação de empresa removida: EmpresaSlugRelatedField já restringe o queryset
         return attrs
 
     def create(self, validated_data):
@@ -103,7 +119,9 @@ class ContaPagarWriteSerializer(serializers.ModelSerializer):
 class ContaPagarReadSerializer(serializers.ModelSerializer):
     status_display          = serializers.CharField(source="get_status_display", read_only=True)
     forma_pagamento_display = serializers.CharField(source="get_forma_pagamento_display", read_only=True)
+    fornecedor_public_id    = serializers.UUIDField(source="fornecedor.public_id", read_only=True)
     fornecedor_nome         = serializers.CharField(source="fornecedor.razao_social", read_only=True)
+    categoria_public_id     = serializers.UUIDField(source="categoria.public_id", read_only=True, default=None)
     categoria_nome          = serializers.CharField(source="categoria.nome", read_only=True)
     notas_fiscais           = NotaFiscalCPSerializer(many=True, read_only=True)
     parcelas                = ParcelaContaPagarSerializer(many=True, read_only=True)
@@ -112,8 +130,8 @@ class ContaPagarReadSerializer(serializers.ModelSerializer):
         model  = ContaPagar
         fields = [
             "public_id",
-            "fornecedor", "fornecedor_nome",
-            "categoria", "categoria_nome",
+            "fornecedor_public_id", "fornecedor_nome",
+            "categoria_public_id",  "categoria_nome",
             "numero_documento", "descricao",
             "forma_pagamento", "forma_pagamento_display",
             "total_parcelas",
@@ -121,7 +139,6 @@ class ContaPagarReadSerializer(serializers.ModelSerializer):
             "data_competencia", "data_cadastro", "data_atualizacao",
             "notas_fiscais", "parcelas",
         ]
-
 
 class BaixaContaPagarSerializer(BaixaBaseSerializer):
     class Meta:

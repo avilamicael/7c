@@ -1,5 +1,6 @@
 # apps/financeiro/shared/models.py
 
+import uuid
 from django.db import models
 from django.utils import timezone
 from apps.empresas.models import Empresa
@@ -30,9 +31,9 @@ class RecalcularStatusMixin(models.Model):
         if not parcelas.exists():
             return
 
-        total   = parcelas.count()
-        pagas   = parcelas.filter(status=parcela_status_pago).count()
-        today   = timezone.localdate()
+        total    = parcelas.count()
+        pagas    = parcelas.filter(status=parcela_status_pago).count()
+        today    = timezone.localdate()
         vencidas = parcelas.filter(status="PENDENTE", data_vencimento__lt=today).count()
 
         if pagas == total:
@@ -49,6 +50,7 @@ class RecalcularStatusMixin(models.Model):
 
 
 class Categoria(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     empresa   = models.ForeignKey(Empresa, on_delete=models.PROTECT, related_name="categorias_financeiras")
     nome      = models.CharField(max_length=100)
     descricao = models.CharField(max_length=255, blank=True)
@@ -73,6 +75,7 @@ class ContaBancaria(models.Model):
         PIX      = "PI", "Conta PIX"
         CAIXA    = "CX", "Caixa"
 
+    public_id  = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     empresa    = models.ForeignKey(Empresa, on_delete=models.PROTECT, related_name="contas_bancarias")
     banco_nome = models.CharField(max_length=100)
     agencia    = models.CharField(max_length=10, blank=True)

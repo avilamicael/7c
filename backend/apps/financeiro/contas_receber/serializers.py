@@ -4,7 +4,19 @@ from decimal import Decimal
 from rest_framework import serializers
 from apps.core.utils import get_empresa_do_membro
 from apps.financeiro.shared.serializers import RegistrarMovimentoBaseSerializer, BaixaBaseSerializer
+from apps.financeiro.shared.models import Categoria
+from apps.fornecedores.models import Fornecedor
+from apps.clientes.models import Cliente
 from .models import ContaReceber, ParcelaContaReceber, BaixaContaReceber
+
+
+class EmpresaSlugRelatedField(serializers.SlugRelatedField):
+    """SlugRelatedField que restringe o queryset à empresa do usuário autenticado."""
+
+    def get_queryset(self):
+        request = self.context.get("request")
+        empresa = get_empresa_do_membro(request.user)
+        return self.queryset.filter(empresa=empresa)
 
 
 class ParcelaContaReceberSerializer(serializers.ModelSerializer):
@@ -45,7 +57,25 @@ class RegistrarRecebimentoSerializer(RegistrarMovimentoBaseSerializer):
 
 
 class ContaReceberWriteSerializer(serializers.ModelSerializer):
-    parcelas = ParcelaContaReceberSerializer(many=True)
+    parcelas   = ParcelaContaReceberSerializer(many=True)
+    cliente    = EmpresaSlugRelatedField(
+        slug_field="public_id",
+        queryset=Cliente.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    fornecedor = EmpresaSlugRelatedField(
+        slug_field="public_id",
+        queryset=Fornecedor.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    categoria  = EmpresaSlugRelatedField(
+        slug_field="public_id",
+        queryset=Categoria.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model  = ContaReceber
@@ -86,15 +116,6 @@ class ContaReceberWriteSerializer(serializers.ModelSerializer):
             if p.get("numero_parcela") != i:
                 raise serializers.ValidationError({"parcelas": f"Parcela {i}: numero_parcela deve ser {i}."})
 
-        empresa = get_empresa_do_membro(self.context["request"].user)
-        if cliente and cliente.empresa_id != empresa.pk:
-            raise serializers.ValidationError({"cliente": "Cliente não pertence à sua empresa."})
-        if fornecedor and fornecedor.empresa_id != empresa.pk:
-            raise serializers.ValidationError({"fornecedor": "Fornecedor não pertence à sua empresa."})
-        categoria = attrs.get("categoria")
-        if categoria and categoria.empresa_id != empresa.pk:
-            raise serializers.ValidationError({"categoria": "Categoria não pertence à sua empresa."})
-
         return attrs
 
     def create(self, validated_data):
@@ -116,8 +137,11 @@ class ContaReceberReadSerializer(serializers.ModelSerializer):
     status_display          = serializers.CharField(source="get_status_display", read_only=True)
     tipo_display            = serializers.CharField(source="get_tipo_display", read_only=True)
     forma_pagamento_display = serializers.CharField(source="get_forma_pagamento_display", read_only=True)
+    cliente_public_id       = serializers.UUIDField(source="cliente.public_id", read_only=True, default=None)
     cliente_nome            = serializers.SerializerMethodField()
+    fornecedor_public_id    = serializers.UUIDField(source="fornecedor.public_id", read_only=True, default=None)
     fornecedor_nome         = serializers.CharField(source="fornecedor.razao_social", read_only=True)
+    categoria_public_id     = serializers.UUIDField(source="categoria.public_id", read_only=True, default=None)
     categoria_nome          = serializers.CharField(source="categoria.nome", read_only=True)
     parcelas                = ParcelaContaReceberSerializer(many=True, read_only=True)
 
@@ -126,10 +150,10 @@ class ContaReceberReadSerializer(serializers.ModelSerializer):
         fields = [
             "public_id",
             "tipo", "tipo_display",
-            "cliente", "cliente_nome",
-            "fornecedor", "fornecedor_nome",
+            "cliente_public_id",    "cliente_nome",
+            "fornecedor_public_id", "fornecedor_nome",
             "percentual_comissao", "valor_base_comissao",
-            "categoria", "categoria_nome",
+            "categoria_public_id",  "categoria_nome",
             "numero_documento", "descricao",
             "forma_pagamento", "forma_pagamento_display",
             "total_parcelas",

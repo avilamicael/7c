@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { request, authHeaders } from "@/lib/api";
+import { contasReceberApi, categoriasApi } from "@/lib/financeiro.api";
+import { clientesApi } from "@/lib/clientes.api";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -24,6 +25,10 @@ function newParcela(id) {
   return { _id: id, data_vencimento: "", valor_bruto: "", desconto: "", cod_barras: "", observacoes: "" };
 }
 
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false, open: externalOpen }) {
   const isOpen = externalOpen !== undefined ? externalOpen : !!conta;
 
@@ -38,16 +43,23 @@ export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false
   const [dataCompetencia, setDataCompetencia] = useState("");
   const [descricao, setDescricao] = useState("");
   const [parcelas, setParcelas] = useState([newParcela(0)]);
-  const [notasFiscais, setNotasFiscais] = useState([]);
 
   useEffect(() => {
     if (!isOpen) return;
-    request("/clientes/", { headers: authHeaders() }).then((r) => r.json()).then((d) => setClientes(Array.isArray(d) ? d : (d?.results ?? [])));
-    request("/financeiro/categorias/", { headers: authHeaders() }).then((r) => r.json()).then((d) => setCategorias(Array.isArray(d) ? d : (d?.results ?? [])));
+
+    // clientes ainda usam public_id como identificador
+    clientesApi.listar()
+      .then((r) => r.json())
+      .then((d) => setClientes(Array.isArray(d) ? d : (d?.results ?? [])))
+      .catch(() => { });
+
+    categoriasApi.listar()
+      .then((d) => setCategorias(Array.isArray(d) ? d : (d?.results ?? [])))
+      .catch(() => { });
 
     if (conta) {
-      setCliente(String(conta.cliente ?? ""));
-      setCategoria(String(conta.categoria ?? ""));
+      setCliente(conta.cliente_public_id ?? "");
+      setCategoria(conta.categoria_public_id ?? "");
       setNumeroDoc(conta.numero_documento ?? "");
       setFormaPgto(conta.forma_pagamento ?? "");
       setDataCompetencia(conta.data_competencia ?? "");
@@ -62,27 +74,25 @@ export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false
           observacoes: p.observacoes ?? "",
         }))
       );
-      setNotasFiscais(
-        (conta.notas_fiscais ?? []).map((nf, i) => ({ _id: i, numero: nf.numero, serie: nf.serie ?? "" }))
-      );
     } else {
       setCliente(""); setCategoria(""); setNumeroDoc(""); setFormaPgto("");
-      setDataCompetencia(""); setDescricao("");
-      setParcelas([newParcela(0)]); setNotasFiscais([]);
+      setDataCompetencia(todayISO()); setDescricao("");
+      setParcelas([newParcela(0)]);
     }
   }, [isOpen, conta]);
 
   function handleSubmit() {
     setLoading(true);
     const body = {
-      cliente: cliente ? parseInt(cliente) : null,
-      categoria: categoria ? parseInt(categoria) : null,
+      tipo: "SERVICO",
+      cliente: cliente || null,        // public_id (UUID)
+      fornecedor: null,
+      categoria: categoria || null,      // public_id (UUID)
       numero_documento: numeroDoc,
       forma_pagamento: formaPgto,
       data_competencia: dataCompetencia,
       descricao,
       total_parcelas: parcelas.length,
-      notas_fiscais: notasFiscais.map(({ numero, serie }) => ({ numero, serie })),
       parcelas: parcelas.map((p, i) => ({
         numero_parcela: i + 1,
         data_vencimento: p.data_vencimento,
@@ -93,23 +103,20 @@ export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false
       })),
     };
 
-    const url = isNew ? "/financeiro/contas-receber/" : `/financeiro/contas-receber/${conta.public_id}/`;
-    const method = isNew ? "POST" : "PATCH";
+    const apiCall = isNew
+      ? contasReceberApi.criar(body)
+      : contasReceberApi.editar(conta.public_id, body);
 
-    request(url, { method, headers: { ...authHeaders(), "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      .then((res) => {
-        if (res.ok) { onSuccess?.(); onClose(); }
-      })
+    apiCall
+      .then(() => { onSuccess?.(); onClose(); })
+      .catch(() => { })
       .finally(() => setLoading(false));
   }
 
   const addParcela = () => setParcelas((p) => [...p, newParcela(p.length)]);
   const removeParcela = (id) => setParcelas((p) => p.filter((x) => x._id !== id));
-  const updateParcela = (id, field, value) => setParcelas((p) => p.map((x) => x._id === id ? { ...x, [field]: value } : x));
-
-  const addNF = () => setNotasFiscais((p) => [...p, { _id: p.length, numero: "", serie: "" }]);
-  const removeNF = (id) => setNotasFiscais((p) => p.filter((x) => x._id !== id));
-  const updateNF = (id, field, value) => setNotasFiscais((p) => p.map((x) => x._id === id ? { ...x, [field]: value } : x));
+  const updateParcela = (id, field, value) =>
+    setParcelas((p) => p.map((x) => x._id === id ? { ...x, [field]: value } : x));
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -124,94 +131,91 @@ export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="flex flex-col gap-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
               <div className="flex flex-col gap-2">
-                <Label>Cliente</Label>
+                <Label>Cliente <span className="text-destructive">*</span></Label>
                 <Select value={cliente} onValueChange={setCliente}>
-                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent>
-                    {clientes.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.nome} {c.sobrenome}</SelectItem>)}
+                    {clientes.map((c) => (
+                      <SelectItem key={c.public_id} value={c.public_id}>
+                        {c.nome} {c.sobrenome}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex flex-col gap-2">
                 <Label>Categoria</Label>
                 <Select value={categoria} onValueChange={setCategoria}>
-                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent>
-                    {categorias.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>)}
+                    {categorias.map((c) => (
+                      <SelectItem key={c.public_id} value={c.public_id}>
+                        {c.nome}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex flex-col gap-2">
                 <Label>Nº Documento</Label>
                 <Input value={numeroDoc} onChange={(e) => setNumeroDoc(e.target.value)} placeholder="NFS-2026-001" />
               </div>
+
               <div className="flex flex-col gap-2">
                 <Label>Forma de Pagamento</Label>
                 <Select value={formaPgto} onValueChange={setFormaPgto}>
-                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent>
-                    {FORMAS_PGTO.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                    {FORMAS_PGTO.map((f) => (
+                      <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="flex flex-col gap-2">
                 <Label>Data de Competência</Label>
                 <Input type="date" value={dataCompetencia} onChange={(e) => setDataCompetencia(e.target.value)} />
               </div>
+
               <div className="flex flex-col gap-2 sm:col-span-2">
                 <Label>Descrição</Label>
                 <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Descrição da conta..." />
               </div>
             </div>
 
-            {/* Notas Fiscais */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold">Notas Fiscais</h4>
-                <Button variant="outline" size="sm" onClick={addNF} className="gap-1.5"><Plus className="size-3.5" />Adicionar</Button>
-              </div>
-              {notasFiscais.length === 0 && <p className="text-xs text-muted-foreground">Nenhuma nota fiscal adicionada.</p>}
-              {notasFiscais.map((nf) => (
-                <div key={nf._id} className="flex items-end gap-3">
-                  <div className="flex flex-1 flex-col gap-1.5">
-                    <Label className="text-xs">Número</Label>
-                    <Input value={nf.numero} onChange={(e) => updateNF(nf._id, "numero", e.target.value)} placeholder="1234" />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-1.5">
-                    <Label className="text-xs">Série</Label>
-                    <Input value={nf.serie} onChange={(e) => updateNF(nf._id, "serie", e.target.value)} placeholder="1" />
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => removeNF(nf._id)} className="text-destructive hover:text-destructive mb-0.5">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-
             {/* Parcelas */}
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Parcelas</h4>
-                <Button variant="outline" size="sm" onClick={addParcela} className="gap-1.5"><Plus className="size-3.5" />Adicionar</Button>
+                <Button variant="outline" size="sm" onClick={addParcela} className="gap-1.5">
+                  <Plus className="size-3.5" />Adicionar
+                </Button>
               </div>
-              {parcelas.map((p, index) => (
-                <div key={p._id} className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4">
+              {parcelas.length === 0 && (
+                <p className="text-xs text-muted-foreground">Nenhuma parcela adicionada.</p>
+              )}
+              {parcelas.map((p) => (
+                <div key={p._id} className="rounded-lg border bg-muted/30 p-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-muted-foreground">Parcela {index + 1}</span>
+                    <span className="text-xs font-medium text-muted-foreground">Parcela {parcelas.indexOf(p) + 1}</span>
                     {parcelas.length > 1 && (
-                      <Button variant="ghost" size="icon" onClick={() => removeParcela(p._id)} className="text-destructive hover:text-destructive size-7">
+                      <Button variant="ghost" size="icon" className="size-6 text-destructive" onClick={() => removeParcela(p._id)}>
                         <Trash2 className="size-3.5" />
                       </Button>
                     )}
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div className="flex flex-col gap-1.5">
-                      <Label className="text-xs">Data de Vencimento</Label>
+                      <Label className="text-xs">Vencimento <span className="text-destructive">*</span></Label>
                       <Input type="date" value={p.data_vencimento} onChange={(e) => updateParcela(p._id, "data_vencimento", e.target.value)} />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <Label className="text-xs">Valor Bruto</Label>
+                      <Label className="text-xs">Valor Bruto <span className="text-destructive">*</span></Label>
                       <Input type="number" step="0.01" value={p.valor_bruto} onChange={(e) => updateParcela(p._id, "valor_bruto", e.target.value)} placeholder="0,00" />
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -237,7 +241,9 @@ export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={loading}>{loading ? "Salvando..." : isNew ? "Cadastrar" : "Salvar"}</Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Salvando..." : isNew ? "Cadastrar" : "Salvar"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

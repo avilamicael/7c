@@ -51,7 +51,7 @@ const navSecondary = [
 export function AppSidebar({ ...props }) {
   const { usuario, empresa } = useAuth()
   const logoSrc    = empresa?.personalizacao?.logo || DEFAULT_LOGO
-  const nomeEmpresa = empresa?.nome_fantasia || "7C Turismo & Consultoria"
+  const nomeEmpresa = empresa?.nome_fantasia || "AVILA"
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

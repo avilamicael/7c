@@ -2,6 +2,34 @@
 
 ---
 
+## [v2.4.0] — 2026-03-04
+
+### Alterações
+- Adicionado `public_id` nos models `Categoria` e `ContaBancaria` em `shared/models.py`
+- `CategoriaSerializer` e `ContaBancariaSerializer` substituem `id` por `public_id` nos fields
+- `EmpresaScopedViewSet` recebe `lookup_field = "public_id"`
+- `EmpresaSlugRelatedField` criado em `contas_pagar/serializers.py` e `contas_receber/serializers.py` — resolve `fornecedor`, `categoria` e `cliente` via `public_id`, restringindo queryset à empresa do usuário autenticado
+- Removidas validações manuais de `empresa_id` no `validate()` dos WriteSerializers — substituídas pela restrição de queryset do `EmpresaSlugRelatedField`
+- `edit-conta-pagar-modal.jsx`: selects de fornecedor e categoria trocados para `public_id`; `handleSubmit` remove `parseInt`, envia UUIDs direto
+- `edit-conta-receber-modal.jsx`: reescrito com `contasReceberApi`/`categoriasApi`/`clientesApi`; selects de cliente e categoria usando `public_id`; `handleSubmit` envia UUIDs direto
+
+### Arquivos modificados
+- `apps/financeiro/shared/models.py`
+- `apps/financeiro/shared/serializers.py`
+- `apps/financeiro/shared/views.py`
+- `apps/financeiro/contas_pagar/serializers.py`
+- `apps/financeiro/contas_receber/serializers.py`
+- `src/components/financeiro/edit-conta-pagar-modal.jsx`
+- `src/components/financeiro/edit-conta-receber-modal.jsx`
+
+### Impacto
+- Segurança: PKs internos nunca expostos nos endpoints de escrita; `EmpresaSlugRelatedField` garante isolamento por empresa no nível do queryset, impedindo referências cruzadas mesmo com UUID manipulado
+- Performance: nenhuma query adicional — restrição de empresa aplicada diretamente no queryset do field
+
+---
+
+---
+
 ## [v2.3.0] — 2026-03-04
 
 ### Alterações

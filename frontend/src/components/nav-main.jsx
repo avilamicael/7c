@@ -31,7 +31,7 @@ export function NavMain({ items, crmItems }) {
   return (
     <>
       <SidebarGroup>
-        <SidebarGroupLabel>7C TURISMO</SidebarGroupLabel>
+        <SidebarGroupLabel>AVILA</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>{renderItems(items)}</SidebarMenu>
         </SidebarGroupContent>
