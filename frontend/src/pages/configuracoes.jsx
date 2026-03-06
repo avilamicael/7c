@@ -4,11 +4,13 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tags, Landmark, Link2, Palette, Truck, ChevronDown, DollarSign } from "lucide-react";
+import { IconLayoutKanban } from "@tabler/icons-react";
 import { CategoriasSection }      from "@/components/configuracoes/categorias-section";
 import { ContasBancariasSection } from "@/components/configuracoes/contas-bancarias-section";
 import { FornecedoresSection } from "@/components/configuracoes/fornecedores/fornecedores-section";
 import { LinkCaptacaoSection }    from "@/components/configuracoes/link-captacao-section";
 import { PersonalizacaoSection }  from "@/components/configuracoes/personalizacao-section";
+import { KanbanBoardsSection }    from "@/components/configuracoes/kanban/kanban-boards-section";
 
 const NAV = [
   {
@@ -21,6 +23,7 @@ const NAV = [
       { id: "fornecedores",label: "Fornecedores",     icon: Truck,    component: FornecedoresSection },
     ],
   },
+  { id: "kanban-boards",  label: "Kanban — Boards",  icon: IconLayoutKanban, component: KanbanBoardsSection },
   { id: "captacao",       label: "Link de Captação", icon: Link2,    component: LinkCaptacaoSection },
   { id: "personalizacao", label: "Personalização",   icon: Palette,  component: PersonalizacaoSection },
 ];

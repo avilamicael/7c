@@ -56,7 +56,7 @@ def tarefa_atribuida(tarefa):
             "titulo": tarefa.titulo,
             "atribuido_por": tarefa.criado_por.nome,
             "prioridade": tarefa.prioridade,
-            "vencimento": tarefa.data_vencimento.isoformat(),
+            "vencimento": tarefa.data_vencimento.isoformat() if tarefa.data_vencimento else None,
         },
     )
     _criar_destinatarios(notificacao, [tarefa.atribuido_a_id])
@@ -92,10 +92,29 @@ def tarefa_lembrete(tarefa):
         payload={
             "tarefa_id": str(tarefa.public_id),
             "titulo": tarefa.titulo,
-            "vencimento": tarefa.data_vencimento.isoformat(),
+            "vencimento": tarefa.data_vencimento.isoformat() if tarefa.data_vencimento else None,
         },
     )
     _criar_destinatarios(notificacao, [tarefa.atribuido_a_id])
+    _despachar(notificacao)
+
+
+def tarefa_vencimento(tarefa):
+    """Notifica criador e responsável quando a tarefa vence hoje."""
+    usuarios = {tarefa.criado_por_id}
+    if tarefa.atribuido_a_id:
+        usuarios.add(tarefa.atribuido_a_id)
+    notificacao = _criar_notificacao(
+        empresa=tarefa.empresa,
+        origem=tarefa,
+        tipo=Notificacao.Tipo.TAREFA_VENCIMENTO,
+        payload={
+            "tarefa_id": str(tarefa.public_id),
+            "titulo": tarefa.titulo,
+            "vencimento": tarefa.data_vencimento.isoformat(),
+        },
+    )
+    _criar_destinatarios(notificacao, list(usuarios))
     _despachar(notificacao)
 
 
@@ -108,8 +127,8 @@ def tarefa_reagendada(tarefa, data_anterior):
         payload={
             "tarefa_id": str(tarefa.public_id),
             "titulo": tarefa.titulo,
-            "data_anterior": data_anterior.isoformat(),
-            "nova_data": tarefa.data_vencimento.isoformat(),
+            "data_anterior": data_anterior.isoformat() if data_anterior else None,
+            "nova_data": tarefa.data_vencimento.isoformat() if tarefa.data_vencimento else None,
         },
     )
     _criar_destinatarios(notificacao, [tarefa.atribuido_a_id])
@@ -122,7 +141,7 @@ def tarefa_reagendada(tarefa, data_anterior):
 
 def card_movido(card, coluna_anterior, movido_por):
     """Notifica todos os membros da empresa quando um card é movido."""
-    empresa = card.coluna.board.empresa
+    empresa = card.empresa or card.coluna.board.empresa
     notificacao = _criar_notificacao(
         empresa=empresa,
         origem=card,
@@ -145,5 +164,14 @@ def card_movido(card, coluna_anterior, movido_por):
 # ──────────────────────────────────────────
 
 def _despachar(notificacao):
+    import logging
     from apps.core.tasks import entregar_notificacao
-    entregar_notificacao.delay(notificacao.pk)
+    try:
+        entregar_notificacao.delay(notificacao.pk)
+    except Exception as exc:
+        # .delay() só falha sincronamente por indisponibilidade do broker (Redis/RabbitMQ).
+        # Erros de lógica dentro da task são assíncronos e tratados pelo retry do Celery.
+        # TODO: remover quando o ambiente garantir Celery sempre ativo em produção.
+        logging.getLogger(__name__).warning(
+            "Broker indisponível, notificação %s não despachada: %s", notificacao.pk, exc
+        )

@@ -14,6 +14,8 @@ class KanbanBoard(models.Model):
     nome             = models.CharField(max_length=150)
     descricao        = models.TextField(blank=True, default="")
     ativo            = models.BooleanField(default=True)
+    compartilhado    = models.BooleanField(default=True)
+    membros          = models.ManyToManyField(Usuario, blank=True, related_name="boards_acesso")
     criado_por       = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, related_name="boards_criados")
     data_criacao     = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
@@ -84,6 +86,7 @@ class KanbanCard(models.Model):
         URGENTE = "URGENTE", "Urgente"
 
     public_id        = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    empresa          = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="kanban_cards", null=True)
     coluna           = models.ForeignKey(KanbanColuna, on_delete=models.CASCADE, related_name="cards")
     titulo           = models.CharField(max_length=255)
     descricao        = models.TextField(blank=True, default="")
@@ -104,6 +107,11 @@ class KanbanCard(models.Model):
 
     class Meta:
         ordering = ["posicao"]
+
+    def save(self, *args, **kwargs):
+        if not self.empresa_id:
+            self.empresa = self.coluna.board.empresa
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.titulo

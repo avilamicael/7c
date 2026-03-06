@@ -2,7 +2,7 @@
 
 - Ajustar as mascaras, limites de caracteres nos campos frontend, validar dados com o backend e retorno de erro p frontedn mostrar p usuario.
 
-- Mesmo cpf para dois clientes
+- Mesmo cpf para dois clientes da mesma empresa, cpf nao esta sendo validadado no backedn, esta deixando cadastar clientes c cpf 
 
 -verificar formas de manter dados comuns no navegador/sessao
 

@@ -34,7 +34,8 @@ class Tarefa(models.Model):
     )
     atribuido_a = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
-        related_name="tarefas_atribuidas"
+        related_name="tarefas_atribuidas",
+        null=True, blank=True,
     )
 
     # vínculo opcional com KanbanCard — OneToOne garante que um card tem no máximo uma tarefa
@@ -46,7 +47,7 @@ class Tarefa(models.Model):
         related_name="tarefa",
     )
 
-    data_vencimento     = models.DateTimeField(db_index=True)
+    data_vencimento     = models.DateField(null=True, blank=True, db_index=True)
     lembrete_em         = models.DateTimeField(null=True, blank=True)
     lembrete_notificado = models.BooleanField(default=False)
     data_conclusao      = models.DateTimeField(null=True, blank=True)
@@ -71,6 +72,14 @@ class Tarefa(models.Model):
             models.Index(fields=["data_vencimento", "status"]),
             models.Index(fields=["lembrete_em", "lembrete_notificado"]),
         ]
+
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
+        if self.status == self.Status.CONCLUIDA and not self.data_conclusao:
+            self.data_conclusao = timezone.now()
+        elif self.status != self.Status.CONCLUIDA:
+            self.data_conclusao = None
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.titulo} [{self.get_prioridade_display()}]"

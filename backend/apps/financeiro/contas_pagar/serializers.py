@@ -115,6 +115,26 @@ class ContaPagarWriteSerializer(serializers.ModelSerializer):
 
         return conta
 
+    def update(self, instance, validated_data):
+        notas_data    = validated_data.pop("notas_fiscais", None)
+        parcelas_data = validated_data.pop("parcelas", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if notas_data is not None:
+            instance.notas_fiscais.all().delete()
+            for nota in notas_data:
+                NotaFiscalCP.objects.create(conta_pagar=instance, **nota)
+
+        if parcelas_data is not None:
+            instance.parcelas.all().delete()
+            for parcela in parcelas_data:
+                ParcelaContaPagar.objects.create(conta_pagar=instance, **parcela)
+
+        return instance
+
 
 class ContaPagarReadSerializer(serializers.ModelSerializer):
     status_display          = serializers.CharField(source="get_status_display", read_only=True)

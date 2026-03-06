@@ -4,7 +4,7 @@ from apps.core.utils import get_empresa_do_membro
 
 def registrar_log(*, request, acao, modulo, objeto, payload=None):
 
-    empresa = get_empresa_do_membro(request)
+    empresa = get_empresa_do_membro(request.user)
     ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR"))
     if ip and "," in ip:
         ip = ip.split(",")[0].strip()

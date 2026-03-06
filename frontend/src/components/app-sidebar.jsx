@@ -36,10 +36,10 @@ const navMain = [
 
 const navCrm = [
   { title: "Dashboard",  url: "#",           icon: IconDashboard },
-  { title: "Kanban",     url: "#",           icon: IconLayoutKanban },
+  { title: "Kanban",     url: "/kanban",     icon: IconLayoutKanban },
   { title: "Clientes",   url: "/clientes",   icon: IconUsers },
   { title: "Financeiro", url: "/financeiro", icon: IconCash },
-  { title: "Tarefas",    url: "#",           icon: IconChecklist },
+  { title: "Tarefas",    url: "/tarefas",    icon: IconChecklist },
 ]
 
 const navSecondary = [

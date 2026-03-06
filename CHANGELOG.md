@@ -2,6 +2,111 @@
 
 ---
 
+## [v2.8.0] — 2026-03-06
+
+### Alterações
+
+**Frontend — Kanban (novo módulo)**
+- `src/lib/kanban.api.js`: cliente de API com `boards.listar`, `boards.buscar`, `boards.criar`, `boards.editar`, `boards.toggleAtivo`, `cards.criar`, `cards.editar`, `cards.mover`, `cards.arquivar`, `cards.reordenar`, `colunas.listar`, `colunas.criar`, `colunas.editar`, `colunas.excluir`
+- `src/pages/kanban.jsx`: página wrapper com `SidebarProvider` + `SiteHeader`
+- `src/components/kanban/kanban-board.jsx`: board principal com `DndContext`; gerencia estado otimista via `cardsRef` + `snapshotRef`; suporte a reordenação interna e movimentação entre colunas com reversão em caso de erro
+- `src/components/kanban/kanban-coluna.jsx`: coluna droppable (`useDroppable`) com `SortableContext`; exibe contagem, badge WIP com alerta visual quando excedido
+- `src/components/kanban/kanban-card.jsx`: card arrastável (`useSortable`); barra de prioridade lateral, avatar do responsável, data de vencimento (vermelho se vencida), ícone de tarefa vinculada, menu de contexto (Editar / Arquivar)
+- `src/components/kanban/edit-card-modal.jsx`: modal criar/editar card com campos `titulo`, `descricao`, `coluna`, `prioridade`, `responsavel`, `data_vencimento`; usa `DatePicker` e sentinel `"__none__"`
+- `src/App.jsx`: adicionada rota `/kanban`
+- `src/components/app-sidebar.jsx`: link Kanban atualizado de `#` para `/kanban`
+
+**Frontend — Configurações: Kanban**
+- `src/components/configuracoes/kanban/kanban-boards-section.jsx`: seção de gestão de boards e colunas; cada board expansível exibe suas colunas; permite criar/editar boards (nome, descrição, compartilhado) e criar/editar/excluir colunas (nome, posição, cor com palette de presets, limite WIP)
+- `src/pages/configuracoes.jsx`: adicionado item "Kanban — Boards" no menu lateral
+
+### Arquivos modificados
+- `src/lib/kanban.api.js` (novo)
+- `src/pages/kanban.jsx` (novo)
+- `src/components/kanban/kanban-board.jsx` (novo)
+- `src/components/kanban/kanban-coluna.jsx` (novo)
+- `src/components/kanban/kanban-card.jsx` (novo)
+- `src/components/kanban/edit-card-modal.jsx` (novo)
+- `src/components/configuracoes/kanban/kanban-boards-section.jsx` (novo)
+- `src/App.jsx`
+- `src/components/app-sidebar.jsx`
+- `src/pages/configuracoes.jsx`
+
+### Impacto
+- Segurança: sem exposição de PKs; todos os endpoints protegidos por `IsMembroEmpresa`; criação/edição de boards restrita a `IsAdminEmpresa`
+- Performance: estado otimista com reversão; `cardsRef` evita closures stale nos handlers DnD; `select_related`/`prefetch_related` no backend
+
+---
+
+## [v2.7.0] — 2026-03-06
+
+### Alterações
+
+**Backend — Tarefas (novo módulo)**
+- Criado `apps/tarefas/` com `models.py`, `serializers.py`, `views.py`, `urls.py`, `signals.py`, `tasks.py`, `apps.py`
+- `Tarefa`: campos `public_id`, `empresa`, `titulo`, `descricao`, `prioridade`, `status`, `criado_por`, `atribuido_a` (nullable), `card` (OneToOne opcional), `data_vencimento` (DateField nullable), `lembrete_em`, `lembrete_notificado`, `data_conclusao`; `save()` gerencia `data_conclusao` automaticamente
+- `TarefaReadSerializer`: expõe `atribuido_a_public_id`, `atribuido_a_nome`, `criado_por_nome`, `card_public_id`, `card_titulo`, `vencida` (SerializerMethodField)
+- `TarefaWriteSerializer`: aceita `atribuido_a` e `card` por `public_id` via `SlugRelatedField` restrito à empresa
+- `TarefaViewSet`: `lookup_field="public_id"`; operadores veem apenas tarefas próprias (`Q(criado_por=user) | Q(atribuido_a=user)`); admins veem todas; actions `concluir`, `cancelar`, `reabrir`
+- `signals.py`: `_cache_estado_anterior` (pre_save), `_sincronizar_card` (move card no kanban quando status muda), `_disparar_notificacoes` (post_save)
+- `tasks.py`: `processar_lembretes` (a cada 5min) e `processar_vencimentos` (diário 08:00) via Celery Beat
+- Registrado em `INSTALLED_APPS` e `core/urls.py`
+
+**Backend — Kanban (refatoração)**
+- Corrigido bug `get_empresa_do_membro(self.request)` → `get_empresa_do_membro(self.request.user)` nos 3 ViewSets
+- `KanbanBoardViewSet`: `prefetch_related` atualizado para incluir `colunas__cards__responsavel`
+- `KanbanColunaSerializer`: agora inclui `cards` aninhados (filtrados por `ativo=True`, ordenados por `posicao`)
+- `KanbanCardReadSerializer`: expõe `coluna_public_id`, `coluna_nome`, `responsavel_public_id`, `responsavel_nome`, info da tarefa vinculada; sem PKs internas
+- `KanbanCardWriteSerializer`: aceita `coluna` e `responsavel` por `public_id` via `ColunaEmpresaField` e `MembroEmpresaField`
+- `KanbanColunaViewSet`: separado em serializers read/write; `get_queryset` com `prefetch_related("acoes", "cards__responsavel")`
+- `KanbanCardViewSet`: create/update retornam `KanbanCardReadSerializer`; `get_serializer_class` separado por action
+
+**Backend — Notificações (novo módulo)**
+- `apps/core/models.py`: adicionados `Notificacao` e `NotificacaoDestinatario` com tipos `TAREFA_*` e `KANBAN_CARD_MOVIDO`
+- `apps/core/services.py`: funções `tarefa_atribuida`, `tarefa_concluida`, `tarefa_lembrete`, `tarefa_vencimento`, `tarefa_reagendada`, `card_movido`; `_despachar` envolve `.delay()` em try/except para não quebrar o fluxo quando Celery indisponível
+- `apps/core/tasks.py`: `entregar_notificacao` (Celery task com retry) — envia via Django Channels WebSocket
+- `apps/core/views.py` + `serializers.py` + `urls.py`: `NotificacaoViewSet` com actions `ler`, `ler-todas`, `nao-lidas-count`
+
+**Backend — Kanban services**
+- `apps/kanban/services.py`: `executar_acoes_coluna` executa `ALTERAR_STATUS_TAREFA`, `ALTERAR_PRIORIDADE`, `NOTIFICAR_RESPONSAVEL`, `NOTIFICAR_EMPRESA` ao mover card
+
+**Frontend — Tarefas (novo módulo)**
+- `src/lib/tarefas.api.js`: `tarefasApi` com `listar`, `criar`, `editar`, `excluir`, `concluir`, `cancelar`, `reabrir`
+- `src/pages/tarefas.jsx`: página wrapper padrão
+- `src/components/tarefas/tarefas-tab.jsx`: KPIs (total, em aberto, vencidas, concluídas), filtros (busca, status, prioridade, "Minhas tarefas"), tabela com barra de prioridade colorida, badges, ações por linha
+- `src/components/tarefas/edit-tarefa-modal.jsx`: modal criar/editar com `DatePicker`, selects com sentinel `"__none__"`, select de responsável via `usuariosApi`
+- `src/components/tarefas/detalhes-tarefa-modal.jsx`: modal read-only com badges, campos detalhados e ações rápidas
+- `src/App.jsx`: rota `/tarefas` adicionada
+- `src/components/app-sidebar.jsx`: link Tarefas atualizado de `"#"` para `"/tarefas"`
+
+**Correções**
+- `apps/financeiro/contas_pagar/serializers.py`: adicionado `update()` em `ContaPagarWriteSerializer`
+- `apps/financeiro/contas_receber/serializers.py`: adicionado `update()` em `ContaReceberWriteSerializer`
+- `src/components/financeiro/edit-conta-receber-modal.jsx`: `forma_pagamento: formaPgto || undefined` para evitar string vazia no campo choices
+- Cores de prioridade no frontend: MÉDIA alterada de âmbar para sky (azul) para maior distinção visual entre MÉDIA e ALTA
+
+### Arquivos modificados
+- `apps/tarefas/` (criado — 7 arquivos)
+- `apps/core/models.py`, `services.py`, `tasks.py`, `views.py`, `serializers.py`, `urls.py`
+- `apps/kanban/serializers.py`, `views.py`, `services.py`
+- `apps/financeiro/contas_pagar/serializers.py`
+- `apps/financeiro/contas_receber/serializers.py`
+- `core/settings.py`, `core/urls.py`, `core/celery.py`
+- `src/lib/tarefas.api.js` (criado)
+- `src/pages/tarefas.jsx` (criado)
+- `src/components/tarefas/tarefas-tab.jsx` (criado)
+- `src/components/tarefas/edit-tarefa-modal.jsx` (criado)
+- `src/components/tarefas/detalhes-tarefa-modal.jsx` (criado)
+- `src/components/financeiro/edit-conta-receber-modal.jsx`
+- `src/App.jsx`
+- `src/components/app-sidebar.jsx`
+
+### Impacto
+- Segurança: operadores isolados às suas próprias tarefas; `public_id` em todos os endpoints; nenhuma PK interna exposta
+- Performance: `select_related`/`prefetch_related` em todas as queries de tarefas e kanban; notificações assíncronas via Celery
+
+---
+
 ## [v2.4.0] — 2026-03-04
 
 ### Alterações

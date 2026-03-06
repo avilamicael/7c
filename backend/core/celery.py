@@ -13,4 +13,8 @@ app.conf.beat_schedule = {
         'task': 'apps.tarefas.tasks.processar_lembretes',
         'schedule': crontab(minute='*/5'),
     },
+    'processar-vencimentos-tarefas': {
+        'task': 'apps.tarefas.tasks.processar_vencimentos',
+        'schedule': crontab(hour=8, minute=0),  # todo dia às 08:00
+    },
 }

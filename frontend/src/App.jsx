@@ -8,6 +8,8 @@ import Clientes from "@/pages/clientes";
 import Profile from "@/pages/profile";
 import Financeiro from "@/pages/financeiro";
 import Configuracoes from "@/pages/configuracoes";
+import Tarefas from "@/pages/tarefas";
+import Kanban from "@/pages/kanban";
 import { Toaster } from "sonner";
 
 function PrivateApp() {
@@ -19,6 +21,8 @@ function PrivateApp() {
         <Route path="/profile"        element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/financeiro"     element={<PrivateRoute><Financeiro /></PrivateRoute>} />
         <Route path="/configuracoes"  element={<PrivateRoute><Configuracoes /></PrivateRoute>} />
+        <Route path="/tarefas"        element={<PrivateRoute><Tarefas /></PrivateRoute>} />
+        <Route path="/kanban"         element={<PrivateRoute><Kanban /></PrivateRoute>} />
         <Route path="*"               element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

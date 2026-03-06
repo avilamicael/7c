@@ -89,7 +89,7 @@ export function EditContaReceberModal({ conta, onClose, onSuccess, isNew = false
       fornecedor: null,
       categoria: categoria || null,      // public_id (UUID)
       numero_documento: numeroDoc,
-      forma_pagamento: formaPgto,
+      forma_pagamento: formaPgto || undefined,
       data_competencia: dataCompetencia,
       descricao,
       total_parcelas: parcelas.length,
