@@ -2,6 +2,59 @@
 
 ---
 
+## [v2.10.0] — 2026-03-06
+
+### Alterações
+
+**Backend — Infraestrutura de modelos do `apps.core`**
+- `backend/apps/core/models.py`: adicionado modelo `Documento` com `public_id` UUID, `GenericForeignKey` para vincular a qualquer objeto do sistema, `FileField` com upload para `documentos/{empresa_id}/{uuid}{ext}`, campos `nome`, `tipo_mime`, `tamanho` e `descricao`
+- `backend/apps/core/migrations/0001_initial_core_models.py` (novo): migration inicial do app `core` criada e aplicada — persiste `AuditLog`, `Notificacao`, `NotificacaoDestinatario` e `Documento` no banco
+
+### Arquivos modificados
+- `backend/apps/core/models.py`
+- `backend/apps/core/migrations/0001_initial_core_models.py` (novo)
+
+### Impacto
+- Segurança: arquivos armazenados com nomes gerados por UUID, sem exposição do nome original no path
+- Performance: índices em `empresa + data_criacao` e `content_type + object_id`
+
+---
+
+## [v2.9.0] — 2026-03-06
+
+### Alterações
+
+**Frontend — Avatar de usuário**
+- `src/components/ui/user-avatar.jsx` (novo): componente `UserAvatar` com cor de fundo determinística por hash do nome (10 cores, suporte dark mode)
+- `src/components/kanban/kanban-card.jsx`: substituído avatar cinza genérico por `UserAvatar`
+- `src/components/tarefas/tarefas-tab.jsx`: coluna "Responsável" exibe `UserAvatar` + nome lado a lado
+
+**Frontend — Lembrete com hora (Tarefas)**
+- `src/components/tarefas/edit-tarefa-modal.jsx`: campo `lembrete_em` dividido em `DatePicker` (data) + `<input type="time">` (hora); hora só aparece após data selecionada; payload combinado em `yyyy-MM-ddTHH:mm:00`
+- `src/components/tarefas/tarefas-tab.jsx`: adicionada coluna "Lembrete" (visível em `xl`) com `formatDateTime` exibindo data e hora; `colSpan` ajustado de 8 para 9
+
+**Backend + Frontend — Lembrete com hora (Kanban)**
+- `backend/apps/kanban/models.py`: adicionado campo `lembrete_em = DateTimeField(null=True, blank=True)` em `KanbanCard`
+- `backend/apps/kanban/migrations/0004_add_lembrete_em_to_kanbancard.py` (novo): migration gerada e aplicada
+- `backend/apps/kanban/serializers.py`: `lembrete_em` incluído em `KanbanCardReadSerializer`, `KanbanCardWriteSerializer` e `KanbanColunaCardSerializer`
+- `src/components/kanban/edit-card-modal.jsx`: campos `lembrete_data` (DatePicker) e `lembrete_hora` (`<input type="time">`) adicionados ao formulário; mesmo padrão do modal de tarefas
+
+### Arquivos modificados
+- `src/components/ui/user-avatar.jsx` (novo)
+- `backend/apps/kanban/migrations/0004_add_lembrete_em_to_kanbancard.py` (novo)
+- `src/components/kanban/kanban-card.jsx`
+- `src/components/kanban/edit-card-modal.jsx`
+- `src/components/tarefas/tarefas-tab.jsx`
+- `src/components/tarefas/edit-tarefa-modal.jsx`
+- `backend/apps/kanban/models.py`
+- `backend/apps/kanban/serializers.py`
+
+### Impacto
+- Segurança: sem impacto
+- Performance: sem impacto
+
+---
+
 ## [v2.8.0] — 2026-03-06
 
 ### Alterações

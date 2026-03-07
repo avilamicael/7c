@@ -126,7 +126,41 @@ class NotificacaoDestinatario(models.Model):
         return f"{self.usuario} | {self.canal} | {self.status}"
 
 
+import uuid
+import os
 
 
+def _documento_upload_path(instance, filename):
+    ext = os.path.splitext(filename)[1].lower()
+    return f"documentos/{instance.empresa_id}/{instance.public_id}{ext}"
+
+
+class Documento(models.Model):
+    public_id    = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
+    empresa      = models.ForeignKey("empresas.Empresa", on_delete=models.CASCADE, related_name="documentos")
+    criado_por   = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id    = models.PositiveIntegerField(null=True, blank=True)
+    objeto       = GenericForeignKey("content_type", "object_id")
+
+    nome         = models.CharField(max_length=255)
+    arquivo      = models.FileField(upload_to=_documento_upload_path)
+    tipo_mime    = models.CharField(max_length=100, blank=True)
+    tamanho      = models.PositiveIntegerField(default=0, help_text="Tamanho em bytes")
+    descricao    = models.TextField(blank=True)
+    data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name        = "Documento"
+        verbose_name_plural = "Documentos"
+        ordering            = ["-data_criacao"]
+        indexes = [
+            models.Index(fields=["empresa", "-data_criacao"]),
+            models.Index(fields=["content_type", "object_id"]),
+        ]
+
+    def __str__(self) -> str:
+        return self.nome
 
 
