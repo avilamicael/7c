@@ -30,13 +30,10 @@ class KanbanBoardViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         empresa = self.get_empresa()
         user    = self.request.user
-        return (
-            KanbanBoard.objects
-            .filter(empresa=empresa, ativo=True)
-            .filter(Q(compartilhado=True) | Q(membros=user))
-            .prefetch_related("colunas__acoes", "colunas__cards__responsavel")
-            .distinct()
-        )
+        qs = KanbanBoard.objects.filter(empresa=empresa, ativo=True)
+        if not IsAdminEmpresa().has_permission(self.request, self):
+            qs = qs.filter(Q(compartilhado=True) | Q(membros=user))
+        return qs.prefetch_related("colunas__acoes", "colunas__cards__responsavel").distinct()
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:

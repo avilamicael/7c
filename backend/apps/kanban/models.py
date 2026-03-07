@@ -93,6 +93,7 @@ class KanbanCard(models.Model):
     posicao          = models.PositiveIntegerField()
     prioridade       = models.CharField(max_length=10, choices=Prioridade.choices, default=Prioridade.MEDIA)
     data_vencimento  = models.DateField(null=True, blank=True)
+    lembrete_em      = models.DateTimeField(null=True, blank=True)
     responsavel      = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name="cards_responsavel")
     criado_por       = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, related_name="cards_criados")
     ativo            = models.BooleanField(default=True)

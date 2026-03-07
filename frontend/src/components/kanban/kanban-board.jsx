@@ -166,7 +166,17 @@ export function KanbanBoard() {
     const posicao = calcPosicao(finalCards, active.id);
 
     try {
-      await kanbanApi.cards.mover(active.id, { coluna: currentColuna, posicao });
+      const updated = await kanbanApi.cards.mover(active.id, { coluna: currentColuna, posicao });
+      // Atualiza o objeto do card no estado com os dados do servidor
+      // (coluna_public_id, tarefa_status, etc. ficam consistentes)
+      if (updated?.public_id) {
+        setCardsSynced((prev) => ({
+          ...prev,
+          [currentColuna]: prev[currentColuna].map((c) =>
+            String(c.public_id) === String(active.id) ? { ...c, ...updated } : c
+          ),
+        }));
+      }
     } catch {
       toast.error("Erro ao mover card.");
       setCardsSynced(snapshotRef.current);

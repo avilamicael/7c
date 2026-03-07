@@ -17,6 +17,7 @@ import {
   Search, Plus, CheckCircle2, Clock, AlertTriangle, ListChecks,
   Eye, Pencil, CheckCheck, RotateCcw, XCircle, LayoutGrid,
 } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -55,6 +56,11 @@ const PRIORIDADE_CONFIG = {
 function formatDate(date) {
   if (!date) return "—";
   return new Date(date + "T00:00:00").toLocaleDateString("pt-BR");
+}
+
+function formatDateTime(dt) {
+  if (!dt) return "—";
+  return new Date(dt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
 function StatusBadge({ status }) {
@@ -261,6 +267,7 @@ export function TarefasTab({ isAdmin, usuario }) {
               <TableHead className="text-xs font-semibold text-foreground h-10">Status</TableHead>
               <TableHead className="text-xs font-semibold text-foreground h-10 hidden lg:table-cell">Responsável</TableHead>
               <TableHead className="text-xs font-semibold text-foreground h-10 hidden md:table-cell">Vencimento</TableHead>
+              <TableHead className="text-xs font-semibold text-foreground h-10 hidden xl:table-cell">Lembrete</TableHead>
               <TableHead className="text-xs font-semibold text-foreground h-10 hidden xl:table-cell text-center">Kanban</TableHead>
               <TableHead className="text-xs font-semibold text-foreground h-10 text-right">Ações</TableHead>
             </TableRow>
@@ -268,11 +275,11 @@ export function TarefasTab({ isAdmin, usuario }) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">Carregando...</TableCell>
+                <TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">Carregando...</TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">Nenhuma tarefa encontrada.</TableCell>
+                <TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">Nenhuma tarefa encontrada.</TableCell>
               </TableRow>
             ) : filtered.map((tarefa) => (
               <TableRow
@@ -315,8 +322,15 @@ export function TarefasTab({ isAdmin, usuario }) {
                 </TableCell>
 
                 {/* Responsável */}
-                <TableCell className="hidden lg:table-cell py-3 text-sm text-muted-foreground">
-                  {tarefa.atribuido_a_nome ?? "—"}
+                <TableCell className="hidden lg:table-cell py-3">
+                  {tarefa.atribuido_a_nome ? (
+                    <div className="flex items-center gap-1.5">
+                      <UserAvatar nome={tarefa.atribuido_a_nome} />
+                      <span className="text-sm text-muted-foreground">{tarefa.atribuido_a_nome}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">—</span>
+                  )}
                 </TableCell>
 
                 {/* Vencimento */}
@@ -331,6 +345,13 @@ export function TarefasTab({ isAdmin, usuario }) {
                     {tarefa.vencida && tarefa.status !== "CONCLUIDA" && tarefa.status !== "CANCELADA" && (
                       <AlertTriangle className="inline ml-1 size-3" />
                     )}
+                  </span>
+                </TableCell>
+
+                {/* Lembrete */}
+                <TableCell className="hidden xl:table-cell py-3">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {tarefa.lembrete_em ? formatDateTime(tarefa.lembrete_em) : "—"}
                   </span>
                 </TableCell>
 
@@ -407,7 +428,7 @@ export function TarefasTab({ isAdmin, usuario }) {
 
         {filtered.length > 0 && (
           <div className="flex items-center justify-between border-t px-4 py-2.5 text-xs text-muted-foreground">
-            <span>{filtered.length} tarefa(s) encontrada(s)</span>
+            <span>{filtered.length} tarefa{filtered.length !== 1 ? "s" : ""} encontrada{filtered.length !== 1 ? "s" : ""}</span>
           </div>
         )}
       </div>

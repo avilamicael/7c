@@ -5,18 +5,34 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Converte hex (#rrggbb) + alpha (0-255) para rgba
+function hexAlpha(hex, alpha) {
+  const h = (hex || "#5dca6c").replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export function KanbanColuna({ coluna, cards, onAddCard, onEditCard, onArchiveCard }) {
   const { setNodeRef, isOver } = useDroppable({ id: coluna.public_id });
 
   const wipExceed = coluna.limite_wip != null && cards.length > coluna.limite_wip;
+  const cor       = coluna.cor || "#5dca6c";
 
   return (
     <div className="flex flex-col w-72 shrink-0">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 rounded-t-lg bg-card border border-b-0">
+      <div
+        className="flex items-center gap-2 px-3 py-2.5 rounded-t-lg border border-b-0"
+        style={{
+          backgroundColor: hexAlpha(cor, 0.12),
+          borderColor:     hexAlpha(cor, 0.35),
+        }}
+      >
         <div
           className="size-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: coluna.cor || "#5dca6c" }}
+          style={{ backgroundColor: cor }}
         />
         <span className="font-semibold text-sm flex-1 truncate">{coluna.nome}</span>
 
@@ -25,7 +41,7 @@ export function KanbanColuna({ coluna, cards, onAddCard, onEditCard, onArchiveCa
             "text-xs rounded-full px-1.5 py-0.5 font-medium leading-none",
             wipExceed
               ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-              : "bg-muted text-muted-foreground"
+              : "bg-black/10 dark:bg-white/10 text-foreground/70"
           )}
         >
           {cards.length}
@@ -45,10 +61,11 @@ export function KanbanColuna({ coluna, cards, onAddCard, onEditCard, onArchiveCa
       {/* Cards */}
       <div
         ref={setNodeRef}
-        className={cn(
-          "flex flex-col gap-2 flex-1 min-h-16 p-2 rounded-b-lg bg-card border transition-colors",
-          isOver && "bg-muted/40 border-primary/40"
-        )}
+        className="flex flex-col gap-2 flex-1 min-h-16 p-2 rounded-b-lg border transition-colors"
+        style={{
+          backgroundColor: isOver ? hexAlpha(cor, 0.22) : hexAlpha(cor, 0.07),
+          borderColor:     hexAlpha(cor, 0.35),
+        }}
       >
         <SortableContext
           items={cards.map((c) => c.public_id)}
@@ -65,7 +82,8 @@ export function KanbanColuna({ coluna, cards, onAddCard, onEditCard, onArchiveCa
         </SortableContext>
 
         {cards.length === 0 && !isOver && (
-          <div className="flex items-center justify-center h-10 text-xs text-muted-foreground/30 select-none">
+          <div className="flex items-center justify-center h-10 text-xs select-none"
+            style={{ color: hexAlpha(cor, 0.4) }}>
             Vazio
           </div>
         )}

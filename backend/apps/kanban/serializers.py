@@ -57,7 +57,7 @@ class KanbanCardReadSerializer(serializers.ModelSerializer):
         model  = KanbanCard
         fields = [
             "public_id", "titulo", "descricao", "posicao",
-            "prioridade", "data_vencimento", "ativo",
+            "prioridade", "data_vencimento", "lembrete_em", "ativo",
             "coluna_public_id", "coluna_nome",
             "responsavel_public_id", "responsavel_nome",
             "tarefa_public_id", "tarefa_titulo", "tarefa_status",
@@ -98,7 +98,7 @@ class KanbanCardWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = KanbanCard
-        fields = ["coluna", "titulo", "descricao", "posicao", "prioridade", "data_vencimento", "responsavel"]
+        fields = ["coluna", "titulo", "descricao", "posicao", "prioridade", "data_vencimento", "lembrete_em", "responsavel"]
 
 
 # ─── Coluna ───────────────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ class KanbanColunaCardSerializer(serializers.ModelSerializer):
         model  = KanbanCard
         fields = [
             "public_id", "titulo", "descricao", "posicao",
-            "prioridade", "data_vencimento",
+            "prioridade", "data_vencimento", "lembrete_em",
             "responsavel_public_id", "responsavel_nome",
             "tarefa_public_id", "tarefa_status",
         ]
@@ -141,12 +141,19 @@ class KanbanColunaCardSerializer(serializers.ModelSerializer):
 
 
 class KanbanColunaSerializer(serializers.ModelSerializer):
-    acoes = KanbanColunaAcaoSerializer(many=True, read_only=True)
-    cards = serializers.SerializerMethodField()
+    acoes               = KanbanColunaAcaoSerializer(many=True, read_only=True)
+    cards               = serializers.SerializerMethodField()
+    acao_alterar_status = serializers.SerializerMethodField()
 
     class Meta:
         model  = KanbanColuna
-        fields = ["public_id", "nome", "posicao", "cor", "limite_wip", "acoes", "cards"]
+        fields = ["public_id", "nome", "posicao", "cor", "limite_wip", "acao_alterar_status", "acoes", "cards"]
+
+    def get_acao_alterar_status(self, obj):
+        for acao in obj.acoes.all():
+            if acao.tipo == KanbanColunaAcao.Tipo.ALTERAR_STATUS_TAREFA:
+                return acao.parametro
+        return None
 
     def get_cards(self, obj):
         cards = obj.cards.filter(ativo=True).select_related("responsavel").order_by("posicao")
@@ -154,9 +161,41 @@ class KanbanColunaSerializer(serializers.ModelSerializer):
 
 
 class KanbanColunaWriteSerializer(serializers.ModelSerializer):
+    acao_alterar_status = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True, write_only=True
+    )
+
     class Meta:
         model  = KanbanColuna
-        fields = ["nome", "posicao", "cor", "limite_wip"]
+        fields = ["nome", "posicao", "cor", "limite_wip", "acao_alterar_status"]
+
+    def _sync_acao_status(self, coluna, valor):
+        if valor:
+            KanbanColunaAcao.objects.update_or_create(
+                coluna=coluna,
+                tipo=KanbanColunaAcao.Tipo.ALTERAR_STATUS_TAREFA,
+                defaults={"parametro": valor},
+            )
+        else:
+            KanbanColunaAcao.objects.filter(
+                coluna=coluna,
+                tipo=KanbanColunaAcao.Tipo.ALTERAR_STATUS_TAREFA,
+            ).delete()
+
+    def create(self, validated_data):
+        acao   = validated_data.pop("acao_alterar_status", None)
+        coluna = super().create(validated_data)
+        if acao is not None:
+            self._sync_acao_status(coluna, acao)
+        return coluna
+
+    def update(self, instance, validated_data):
+        send_acao = "acao_alterar_status" in self.initial_data
+        acao      = validated_data.pop("acao_alterar_status", None)
+        coluna    = super().update(instance, validated_data)
+        if send_acao:
+            self._sync_acao_status(coluna, acao)
+        return coluna
 
 
 # ─── Board ────────────────────────────────────────────────────────────────────

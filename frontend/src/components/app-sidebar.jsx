@@ -45,13 +45,13 @@ const navCrm = [
 const navSecondary = [
   { title: "Configurações", url: "/configuracoes", icon: IconSettings },
   { title: "Ajuda",         url: "#",              icon: IconHelp },
-  { title: "Procurar",      url: "#",              icon: IconSearch },
+  // { title: "Procurar",      url: "#",              icon: IconSearch },
 ]
 
 export function AppSidebar({ ...props }) {
   const { usuario, empresa } = useAuth()
   const logoSrc    = empresa?.personalizacao?.logo || DEFAULT_LOGO
-  const nomeEmpresa = empresa?.nome_fantasia || "AVILA"
+  const nomeEmpresa = empresa?.nome_fantasia || "- AVILA - SOLUÇÕES"
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

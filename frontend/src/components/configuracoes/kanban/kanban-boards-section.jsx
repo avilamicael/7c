@@ -121,22 +121,32 @@ const COR_PRESETS = [
   "#8b5cf6", "#ec4899", "#14b8a6", "#6b7280",
 ];
 
+const ACAO_STATUS_OPTIONS = [
+  { value: "__none__",    label: "Nenhuma ação" },
+  { value: "PENDENTE",    label: "→ Alterar tarefa para Pendente" },
+  { value: "EM_PROGRESSO", label: "→ Alterar tarefa para Em Progresso" },
+  { value: "CONCLUIDA",   label: "→ Alterar tarefa para Concluída" },
+  { value: "CANCELADA",   label: "→ Alterar tarefa para Cancelada" },
+];
+
 function ColunaDialog({ open, coluna, boardId, onClose, onSuccess }) {
   const isNew = !coluna;
-  const [form, setForm]       = useState({ nome: "", posicao: 0, cor: "#5dca6c", limite_wip: "" });
+  const [form, setForm]       = useState({ nome: "", posicao: 0, cor: "#5dca6c", limite_wip: "", acao_alterar_status: "" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
+    const acaoAtual = coluna?.acao_alterar_status ?? "";
     setForm(
       coluna
         ? {
-            nome:       coluna.nome ?? "",
-            posicao:    coluna.posicao ?? 0,
-            cor:        coluna.cor ?? "#5dca6c",
-            limite_wip: coluna.limite_wip != null ? String(coluna.limite_wip) : "",
+            nome:                coluna.nome ?? "",
+            posicao:             coluna.posicao ?? 0,
+            cor:                 coluna.cor ?? "#5dca6c",
+            limite_wip:          coluna.limite_wip != null ? String(coluna.limite_wip) : "",
+            acao_alterar_status: acaoAtual,
           }
-        : { nome: "", posicao: 0, cor: "#5dca6c", limite_wip: "" }
+        : { nome: "", posicao: 0, cor: "#5dca6c", limite_wip: "", acao_alterar_status: "" }
     );
   }, [open, coluna]);
 
@@ -146,10 +156,11 @@ function ColunaDialog({ open, coluna, boardId, onClose, onSuccess }) {
     setLoading(true);
     try {
       const payload = {
-        nome:       form.nome.trim(),
-        posicao:    Number(form.posicao) || 0,
-        cor:        form.cor,
-        limite_wip: form.limite_wip !== "" ? Number(form.limite_wip) : null,
+        nome:                form.nome.trim(),
+        posicao:             Number(form.posicao) || 0,
+        cor:                 form.cor,
+        limite_wip:          form.limite_wip !== "" ? Number(form.limite_wip) : null,
+        acao_alterar_status: form.acao_alterar_status || null,
       };
       if (isNew) {
         await kanbanApi.colunas.criar(boardId, payload);
@@ -235,6 +246,22 @@ function ColunaDialog({ open, coluna, boardId, onClose, onSuccess }) {
                 title="Cor personalizada"
               />
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Ação ao entrar nesta coluna</Label>
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              value={form.acao_alterar_status || "__none__"}
+              onChange={(e) => setForm((f) => ({ ...f, acao_alterar_status: e.target.value === "__none__" ? "" : e.target.value }))}
+            >
+              {ACAO_STATUS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Quando um card com tarefa vinculada entrar nesta coluna, o status da tarefa será atualizado automaticamente.
+            </p>
           </div>
         </form>
         <DialogFooter>

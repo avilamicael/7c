@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 const PRIORIDADE_BAR = {
   URGENTE: "bg-red-500",
@@ -30,13 +31,6 @@ function formatData(data) {
   });
 }
 
-function Inicial({ nome }) {
-  return (
-    <div className="size-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold shrink-0">
-      {nome ? nome.charAt(0).toUpperCase() : "?"}
-    </div>
-  );
-}
 
 export function KanbanCard({ card, isOverlay = false, onEdit, onArchive }) {
   const {
@@ -90,7 +84,7 @@ export function KanbanCard({ card, isOverlay = false, onEdit, onArchive }) {
         {/* Footer */}
         <div className="flex items-center gap-2 flex-wrap mt-0.5">
           {card.responsavel_public_id && (
-            <Inicial nome={card.responsavel_nome} />
+            <UserAvatar nome={card.responsavel_nome} />
           )}
 
           {card.data_vencimento && (

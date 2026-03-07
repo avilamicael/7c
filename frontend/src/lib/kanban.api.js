@@ -55,6 +55,9 @@ export const kanbanApi = {
     arquivar: (id) =>
       handle(request(`/kanban/cards/${id}/arquivar/`, { method: "POST", headers: json() })),
 
+    listar: () =>
+      handle(request("/kanban/cards/", { headers: h() })),
+
     reordenar: (items) =>
       handle(request("/kanban/cards/reordenar/", { method: "POST", headers: json(), body: JSON.stringify(items) })),
   },
